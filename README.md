@@ -62,3 +62,7 @@ agri-advisor/
 ```
 
 ---
+## 🤖 AI Disease Detection
+
+The project integrates a lightweight CNN image classifier trained using Google Teachable Machine and TensorFlow.js for browser-based crop disease prediction.
+
