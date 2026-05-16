@@ -1,0 +1,2519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriAdvisor AI</title>
+<!-- Non-blocking font load — page renders immediately even on 2G -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,700;0,900;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,700;0,900;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"></noscript>
+<style>
+  :root {
+    --bg:        #EFF4EB;
+    --bg-alt:    #F7FAF4;
+    --white:     #FFFFFF;
+    --forest:    #1E3A1E;
+    --forest-md: #2D5A2D;
+    --forest-lt: #4A7C4A;
+    --gold:      #E8A820;
+    --gold-lt:   #F5C842;
+    --gold-bg:   #FDF3D8;
+    --muted:     #6B7E6B;
+    --border:    #D4E0CC;
+    --shadow:    0 2px 16px rgba(30,58,30,0.08);
+    --shadow-lg: 0 8px 32px rgba(30,58,30,0.13);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--forest);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255,255,255,0.94);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px; height: 58px;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 1px 8px rgba(30,58,30,0.06);
+  }
+  .logo { display: flex; align-items: center; gap: 9px; }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: var(--gold); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; box-shadow: 0 2px 8px rgba(232,168,32,0.35);
+  }
+  .logo-text {
+    font-family: 'Merriweather', serif;
+    font-weight: 900; font-size: 17px;
+    color: var(--forest); letter-spacing: -0.3px;
+  }
+  .logo-text span { color: var(--gold); }
+  .lang-switcher { display: flex; gap: 5px; }
+  .lang-btn {
+    padding: 5px 11px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+    cursor: pointer; border: 1.5px solid var(--border);
+    background: transparent; color: var(--muted);
+    transition: all 0.2s; font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .lang-btn.active { background: var(--forest); color: #fff; border-color: var(--forest); }
+
+  /* ── SENSOR BAR ── */
+  .sensor-bar {
+    background: linear-gradient(90deg, var(--forest) 0%, #2a5c2a 100%);
+    padding: 9px 20px;
+    display: flex; align-items: center; gap: 0;
+    overflow-x: auto; position: sticky; top: 58px; z-index: 90;
+    box-shadow: 0 2px 8px rgba(30,58,30,0.18);
+    scrollbar-width: none;
+  }
+  .sensor-bar::-webkit-scrollbar { display: none; }
+  .sensor-pill {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 100px; padding: 5px 13px;
+    font-size: 12px; font-weight: 600; color: #fff;
+    white-space: nowrap; flex-shrink: 0; margin-right: 8px;
+    cursor: default;
+  }
+  .sensor-pill .s-icon { font-size: 13px; }
+  .sensor-pill .s-val { color: var(--gold-lt); font-weight: 700; }
+  .sensor-pill.loading .s-val { color: rgba(255,255,255,0.45); }
+  .sensor-refresh {
+    margin-left: auto; flex-shrink: 0;
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 100px; padding: 5px 12px;
+    font-size: 11px; font-weight: 700; color: #fff;
+    cursor: pointer; transition: all 0.2s;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    white-space: nowrap;
+  }
+  .sensor-refresh:hover { background: rgba(255,255,255,0.25); }
+  .sensor-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #4ade80; animation: pulse 2.2s infinite; flex-shrink: 0;
+  }
+  .sensor-dot.loading { background: rgba(255,255,255,0.35); animation: none; }
+
+  /* ── HERO ── */
+  .hero { padding: 40px 20px 28px; position: relative; overflow: hidden; }
+  .hero::after {
+    content: '';
+    position: absolute; top: -60px; right: -80px;
+    width: 260px; height: 260px;
+    background: radial-gradient(circle, rgba(232,168,32,0.16) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--gold-bg);
+    border: 1.5px solid rgba(232,168,32,0.35);
+    border-radius: 100px; padding: 5px 14px 5px 9px;
+    font-size: 10px; font-weight: 700; letter-spacing: 1.3px;
+    color: #8a6010; text-transform: uppercase; margin-bottom: 20px;
+    animation: fadeUp 0.5s ease both;
+  }
+  .eyebrow-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--gold); animation: pulse 2.2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:0.5; transform:scale(1.4); }
+  }
+  .hero-headline {
+    font-family: 'Merriweather', serif;
+    font-weight: 900; font-size: 38px; line-height: 1.1;
+    letter-spacing: -1px; color: var(--forest); margin-bottom: 6px;
+    animation: fadeUp 0.5s 0.08s ease both;
+  }
+  .hero-headline .hl-gold   { color: var(--gold); }
+  .hero-headline .hl-italic { font-style: italic; }
+  .hero-sub {
+    font-size: 14px; line-height: 1.7; color: var(--muted);
+    margin-top: 14px; margin-bottom: 28px; font-weight: 400;
+    animation: fadeUp 0.5s 0.16s ease both;
+  }
+  .stats-row {
+    display: grid; grid-template-columns: repeat(3,1fr);
+    gap: 10px; margin-bottom: 32px;
+    animation: fadeUp 0.5s 0.24s ease both;
+  }
+  .stat {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 16px; padding: 16px 10px;
+    text-align: center; box-shadow: var(--shadow);
+  }
+  .stat-num {
+    font-family: 'Merriweather', serif;
+    font-size: 28px; font-weight: 900; color: var(--forest); line-height: 1; margin-bottom: 5px;
+  }
+  .stat-num span { color: var(--gold); }
+  .stat-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.5px;
+    color: var(--muted); text-transform: uppercase; line-height: 1.4;
+  }
+
+  /* ── BANNER STRIP ── */
+  .hero-banner {
+    margin: 0 20px 32px;
+    border-radius: 20px;
+    background: linear-gradient(120deg, var(--forest) 0%, var(--forest-md) 60%, #3d7a3d 100%);
+    padding: 26px 22px; position: relative; overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    animation: fadeUp 0.5s 0.32s ease both;
+  }
+  .hero-banner::before {
+    content: '';
+    position: absolute; top: -30px; right: -30px;
+    width: 180px; height: 180px;
+    background: radial-gradient(circle, rgba(232,168,32,0.22) 0%, transparent 70%);
+  }
+  .hero-banner::after {
+    content: '🌿'; position: absolute;
+    bottom: -12px; right: 14px;
+    font-size: 88px; opacity: 0.15; line-height: 1;
+  }
+  .banner-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.55); text-transform: uppercase; margin-bottom: 8px;
+  }
+  .banner-title {
+    font-family: 'Merriweather', serif;
+    font-size: 21px; font-weight: 900; color: #fff; line-height: 1.3; margin-bottom: 18px;
+  }
+  .banner-title span { color: var(--gold-lt); font-style: italic; }
+  .banner-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 20px; background: var(--gold); border: none;
+    border-radius: 100px; font-size: 13px; font-weight: 700;
+    color: var(--forest); cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    box-shadow: 0 4px 14px rgba(232,168,32,0.4); transition: all 0.2s;
+  }
+  .banner-cta:hover { background: var(--gold-lt); transform: translateY(-1px); }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 10px; font-weight: 700; letter-spacing: 2px;
+    color: var(--forest-lt); text-transform: uppercase; margin-bottom: 14px;
+  }
+  .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  /* ── FEATURE CARDS ── */
+  .features-section { padding: 0 20px 52px; }
+  .feature-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 20px; padding: 20px; margin-bottom: 12px;
+    cursor: pointer; transition: transform 0.22s ease, box-shadow 0.22s ease;
+    box-shadow: var(--shadow); animation: fadeUp 0.5s ease both;
+    position: relative; overflow: hidden;
+  }
+  .feature-card::after {
+    content:''; position: absolute; bottom:0; left:0; right:0; height:3px;
+    background: linear-gradient(90deg, var(--gold), var(--forest-lt));
+    transform: scaleX(0); transform-origin: left; transition: transform 0.3s ease;
+  }
+  .feature-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+  .feature-card:hover::after { transform: scaleX(1); }
+  .feature-card:active { transform: scale(0.985); }
+  .feature-card:nth-child(1){animation-delay:0s}
+  .feature-card:nth-child(2){animation-delay:.06s}
+  .feature-card:nth-child(3){animation-delay:.12s}
+  .feature-card:nth-child(4){animation-delay:.18s}
+  .feature-card:nth-child(5){animation-delay:.24s}
+  .card-top {
+    display: flex; align-items: flex-start;
+    justify-content: space-between; margin-bottom: 12px;
+  }
+  .card-icon-wrap {
+    width: 50px; height: 50px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center; font-size: 24px;
+  }
+  .icon-gold   { background: var(--gold-bg); }
+  .icon-green  { background: #E8F5E8; }
+  .icon-sky    { background: #E8F4FD; }
+  .icon-peach  { background: #FDF0E8; }
+  .icon-forest { background: #E8EFE8; }
+  .card-arrow {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted); font-size: 14px; transition: all 0.2s; flex-shrink: 0;
+  }
+  .feature-card:hover .card-arrow { background: var(--gold); border-color: var(--gold); color: #fff; }
+  .card-title {
+    font-family: 'Merriweather', serif;
+    font-size: 18px; font-weight: 700; color: var(--forest);
+    margin-bottom: 7px; line-height: 1.25;
+  }
+  .card-desc { font-size: 13.5px; line-height: 1.65; color: var(--muted); margin-bottom: 14px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .tag {
+    font-size: 10px; font-weight: 600; padding: 4px 10px;
+    border-radius: 100px; border: 1.5px solid var(--border);
+    color: var(--forest-lt); background: var(--bg-alt);
+    letter-spacing: 0.3px; text-transform: uppercase;
+  }
+  .card-link {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 13px; font-weight: 700; color: var(--forest-md); text-decoration: none;
+  }
+  .card-link .arr { transition: transform 0.2s; display: inline-block; }
+  .feature-card:hover .arr { transform: translateX(4px); }
+
+  /* ── INNER PAGES ── */
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-header {
+    padding: 12px 20px; border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.97); backdrop-filter: blur(10px);
+    position: sticky; top: 58px; z-index: 90;
+  }
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 600; color: var(--forest-md);
+    cursor: pointer; background: none; border: none;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    padding: 6px 12px; border-radius: 20px; transition: background 0.2s;
+  }
+  .back-btn:hover { background: var(--bg); }
+
+  /* ── STEPPER ── */
+  .stepper { display: flex; align-items: center; padding: 16px 20px 8px; }
+  .step { display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1; }
+  .step-circle {
+    width: 30px; height: 30px; border-radius: 50%;
+    border: 2px solid var(--border); background: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: var(--muted); transition: all 0.3s;
+  }
+  .step.done   .step-circle { background: var(--forest-md); border-color: var(--forest-md); color: #fff; }
+  .step.active .step-circle {
+    background: var(--gold); border-color: var(--gold); color: var(--forest);
+    box-shadow: 0 0 0 4px rgba(232,168,32,0.2);
+  }
+  .step-name {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.8px;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .step.active .step-name { color: var(--gold); }
+  .step.done   .step-name { color: var(--forest-md); }
+  .step-line {
+    flex: 1; height: 2px; background: var(--border);
+    margin-top: -20px; margin-bottom: 24px;
+    transition: background 0.3s; border-radius: 2px;
+  }
+  .step-line.done { background: var(--forest-md); }
+  .page-title {
+    font-family: 'Merriweather', serif;
+    font-size: 25px; font-weight: 900; color: var(--forest);
+    padding: 18px 20px 6px; line-height: 1.25;
+  }
+  .page-subtitle { font-size: 13px; color: var(--muted); padding: 0 20px 18px; }
+
+  /* ── GRIDS ── */
+  .crop-grid, .symptom-grid, .location-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; padding: 0 20px 110px;
+  }
+  .crop-card, .symptom-card, .location-card {
+    background: var(--white); border: 2px solid var(--border);
+    border-radius: 16px;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    cursor: pointer; transition: all 0.2s;
+    font-size: 13px; font-weight: 600; color: var(--forest);
+    text-align: center; line-height: 1.3; box-shadow: var(--shadow);
+  }
+  .crop-card   { padding: 18px 12px; font-size: 13.5px; }
+  .symptom-card{ padding: 16px 12px; }
+  .location-card{ padding: 20px 12px; }
+  .crop-card:hover, .symptom-card:hover, .location-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .crop-card.selected {
+    border-color: var(--gold); background: var(--gold-bg);
+    box-shadow: 0 0 0 3px rgba(232,168,32,0.2);
+  }
+  .symptom-card.selected, .location-card.selected {
+    border-color: var(--forest-md); background: #E8F0E8;
+    box-shadow: 0 0 0 3px rgba(45,90,45,0.15);
+  }
+  .crop-emoji   { font-size: 34px; line-height: 1; }
+  .symptom-icon { font-size: 26px; }
+  .location-icon{ font-size: 28px; }
+
+  /* ── BOTTOM BAR ── */
+  .bottom-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    padding: 12px 20px 26px;
+    background: rgba(255,255,255,0.97); backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+    display: flex; gap: 10px; z-index: 100;
+    box-shadow: 0 -4px 20px rgba(30,58,30,0.08);
+  }
+  .btn-secondary {
+    padding: 14px 18px; border-radius: 14px;
+    border: 2px solid var(--border); background: var(--white);
+    font-size: 13.5px; font-weight: 600; color: var(--forest);
+    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.2s;
+  }
+  .btn-secondary:hover { background: var(--bg); }
+  .btn-primary {
+    flex: 1; padding: 14px 20px; border-radius: 14px; border: none;
+    background: var(--gold); color: var(--forest);
+    font-size: 14px; font-weight: 700;
+    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all 0.2s; box-shadow: 0 4px 14px rgba(232,168,32,0.35);
+  }
+  .btn-primary:hover { background: var(--gold-lt); transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:disabled { opacity: 0.38; cursor: default; transform: none; box-shadow: none; }
+
+  /* ── RESULT ── */
+  .result-wrap { padding: 20px 20px 40px; }
+  .result-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 22px; overflow: hidden;
+    box-shadow: var(--shadow-lg); animation: fadeUp 0.4s ease both;
+  }
+  .result-hero-strip {
+    background: linear-gradient(135deg, var(--forest) 0%, var(--forest-md) 100%);
+    padding: 24px 22px 20px; position: relative; overflow: hidden;
+  }
+  .result-hero-strip::after {
+    content: '🌾'; position: absolute;
+    right: 16px; top: 10px; font-size: 64px; opacity: 0.12; line-height: 1;
+  }
+  .disease-pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 100px; padding: 4px 12px 4px 8px;
+    font-size: 11px; font-weight: 700; color: #fff; margin-bottom: 10px;
+  }
+  .pill-dot { width: 7px; height: 7px; border-radius: 50%; background: #f97316; }
+  .disease-name {
+    font-family: 'Merriweather', serif;
+    font-size: 26px; font-weight: 900; color: #fff; line-height: 1.2; margin-bottom: 6px;
+  }
+  .disease-meta { font-size: 12px; color: rgba(255,255,255,0.6); }
+  .result-body { padding: 18px 20px 20px; }
+  .info-btn {
+    background: var(--bg-alt); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px 14px;
+    font-size: 13px; line-height: 1.55; color: var(--forest);
+    text-align: left; cursor: default;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .action-box {
+    background: var(--gold-bg); border: 1.5px solid rgba(232,168,32,0.35);
+    border-radius: 14px; padding: 14px 16px; margin-bottom: 14px;
+  }
+  .action-label { font-size: 10px; font-weight: 700; color: #8a6010; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .action-text { font-size: 13.5px; line-height: 1.65; color: var(--forest); }
+  .disclaimer {
+    display: flex; gap: 8px; align-items: flex-start;
+    background: #FFF8F0; border: 1px solid #FFD9A8;
+    border-radius: 12px; padding: 12px 14px; margin-bottom: 14px;
+    font-size: 12px; line-height: 1.55; color: #7c4a00;
+  }
+  .check-again-btn {
+    width: 100%; padding: 14px; border-radius: 14px;
+    border: 2px solid var(--border); background: var(--white);
+    font-size: 14px; font-weight: 600; color: var(--forest);
+    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all 0.2s;
+  }
+  .check-again-btn:hover { background: var(--bg); border-color: var(--forest-lt); }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .animate-in { animation: fadeUp 0.4s ease both; }
+
+  /* ── MULTI-SELECT HINT ── */
+  .multi-hint {
+    font-size: 11px; color: var(--gold); font-weight: 600;
+    padding: 0 20px 6px; display: flex; align-items: center; gap: 5px;
+  }
+
+  /* ── AI LOADING ── */
+  .ai-loading {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; padding: 48px 20px; gap: 16px;
+  }
+  .ai-spinner {
+    width: 48px; height: 48px; border-radius: 50%;
+    border: 3px solid var(--border);
+    border-top-color: var(--gold);
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .ai-loading-text { font-size: 14px; color: var(--muted); font-weight: 600; text-align: center; }
+  .ai-loading-sub { font-size: 12px; color: var(--muted); opacity: 0.7; }
+
+  /* ── SEVERITY BADGE ── */
+  .severity-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 13px; border-radius: 100px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+  .severity-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .severity-low    { background: rgba(34,197,94,0.15);  color: #166534; }
+  .severity-low    .severity-dot { background: #22c55e; }
+  .severity-medium { background: rgba(234,179,8,0.15);  color: #854d0e; }
+  .severity-medium .severity-dot { background: #eab308; }
+  .severity-high   { background: rgba(239,68,68,0.15);  color: #991b1b; }
+  .severity-high   .severity-dot { background: #ef4444; animation: pulse 1.5s infinite; }
+
+  /* ── PHOTO UPLOAD ── */
+  .photo-upload-zone {
+    margin: 0 20px 16px;
+    border: 2px dashed var(--border); border-radius: 16px;
+    background: var(--white); padding: 24px 20px;
+    text-align: center; cursor: pointer;
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .photo-upload-zone:hover, .photo-upload-zone.drag-over {
+    border-color: var(--gold); background: var(--gold-bg);
+  }
+  .photo-upload-zone .file-input-overlay {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .upload-icon { font-size: 32px; margin-bottom: 8px; }
+  .upload-title { font-size: 14px; font-weight: 700; color: var(--forest); margin-bottom: 4px; }
+  .upload-sub { font-size: 12px; color: var(--muted); }
+  .upload-preview {
+    width: 100%; max-height: 160px; object-fit: cover;
+    border-radius: 10px; margin-top: 12px; display: none;
+  }
+  .upload-preview.visible { display: block; }
+  .upload-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #E8F5E8; border: 1px solid #A3D9A5;
+    border-radius: 100px; padding: 4px 12px;
+    font-size: 11px; font-weight: 700; color: #166534;
+    margin-top: 8px;
+  }
+
+  /* ── FERTILIZER PAGE ── */
+  .fert-section { padding: 0 20px 16px; }
+  .fert-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    color: var(--forest-md); text-transform: uppercase;
+    margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+  }
+  .fert-crop-grid {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 8px;
+  }
+  .fert-crop-card {
+    background: var(--white); border: 2px solid var(--border);
+    border-radius: 12px; padding: 12px 8px;
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    cursor: pointer; transition: all 0.2s;
+    font-size: 12px; font-weight: 600; color: var(--forest);
+    text-align: center; box-shadow: var(--shadow);
+  }
+  .fert-crop-card.selected {
+    border-color: var(--gold); background: var(--gold-bg);
+    box-shadow: 0 0 0 3px rgba(232,168,32,0.2);
+  }
+  .fert-crop-card .fc-emoji { font-size: 26px; }
+  .npk-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .npk-box {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px 12px; text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .npk-letter {
+    font-family: 'Merriweather', serif;
+    font-size: 22px; font-weight: 900; margin-bottom: 6px;
+  }
+  .npk-n { color: #3b82f6; }
+  .npk-p { color: #f97316; }
+  .npk-k { color: #8b5cf6; }
+  .npk-name { font-size: 9px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
+  .npk-input {
+    width: 100%; border: 1.5px solid var(--border); border-radius: 8px;
+    padding: 7px 6px; font-size: 15px; font-weight: 700;
+    text-align: center; font-family: 'Plus Jakarta Sans', sans-serif;
+    color: var(--forest); background: var(--bg);
+    outline: none; transition: border-color 0.2s;
+  }
+  .npk-input:focus { border-color: var(--gold); }
+  .npk-unit { font-size: 9px; color: var(--muted); margin-top: 4px; font-weight: 600; }
+  .ph-moisture-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .pm-box {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px 12px;
+    box-shadow: var(--shadow);
+  }
+  .pm-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+  .pm-input {
+    width: 100%; border: 1.5px solid var(--border); border-radius: 8px;
+    padding: 8px 10px; font-size: 15px; font-weight: 700;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: var(--forest); background: var(--bg);
+    outline: none; transition: border-color 0.2s;
+  }
+  .pm-input:focus { border-color: var(--gold); }
+
+  /* ── FERTILIZER RESULT ── */
+  .fert-result-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 22px; overflow: hidden;
+    box-shadow: var(--shadow-lg); animation: fadeUp 0.4s ease both;
+    margin: 0 20px 40px;
+  }
+  .fert-result-strip {
+    background: linear-gradient(135deg, #1a4731 0%, #2D5A2D 100%);
+    padding: 22px 20px 18px; position: relative; overflow: hidden;
+  }
+  .fert-result-strip::after {
+    content: '🌱'; position: absolute;
+    right: 14px; top: 8px; font-size: 64px; opacity: 0.12; line-height: 1;
+  }
+  .fert-pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 100px; padding: 4px 12px 4px 8px;
+    font-size: 11px; font-weight: 700; color: #fff; margin-bottom: 10px;
+  }
+  .fert-pill-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; }
+  .fert-title { font-family: 'Merriweather', serif; font-size: 22px; font-weight: 900; color: #fff; line-height: 1.25; margin-bottom: 4px; }
+  .fert-sub { font-size: 12px; color: rgba(255,255,255,0.6); }
+  .fert-body { padding: 18px 20px 20px; }
+  .npk-bars { margin-bottom: 16px; }
+  .npk-bar-row { margin-bottom: 10px; }
+  .npk-bar-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .npk-bar-name { font-size: 11px; font-weight: 700; color: var(--forest); }
+  .npk-bar-vals { font-size: 11px; color: var(--muted); }
+  .npk-bar-track { height: 8px; background: var(--bg); border-radius: 100px; overflow: hidden; position: relative; }
+  .npk-bar-current { height: 100%; border-radius: 100px; transition: width 1s ease; }
+  .npk-bar-ideal-marker {
+    position: absolute; top: 0; bottom: 0; width: 2px;
+    background: rgba(0,0,0,0.2); border-radius: 1px;
+  }
+  .shopping-list { margin-bottom: 16px; }
+  .shop-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px; background: var(--bg-alt);
+    border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px;
+  }
+  .shop-item-left { display: flex; flex-direction: column; gap: 2px; }
+  .shop-item-name { font-size: 13px; font-weight: 700; color: var(--forest); }
+  .shop-item-qty { font-size: 11px; color: var(--muted); }
+  .shop-item-cost {
+    font-size: 13px; font-weight: 700; color: var(--forest-md);
+    background: #E8F0E8; padding: 4px 10px; border-radius: 20px;
+  }
+  .fert-tip-box {
+    background: var(--gold-bg); border: 1.5px solid rgba(232,168,32,0.35);
+    border-radius: 14px; padding: 14px 16px; margin-bottom: 14px;
+  }
+  .fert-tip-label { font-size: 10px; font-weight: 700; color: #8a6010; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .fert-tip-text { font-size: 13.5px; line-height: 1.65; color: var(--forest); }
+
+  /* ── WEATHER PAGE ── */
+  .weather-container { padding: 20px 20px 100px; }
+  .weather-hero {
+    border-radius: 22px; overflow: hidden;
+    background: linear-gradient(135deg, #1565C0 0%, #1976D2 60%, #42A5F5 100%);
+    padding: 24px 22px; margin-bottom: 16px;
+    position: relative; box-shadow: var(--shadow-lg);
+    animation: fadeUp 0.4s ease both;
+  }
+  .weather-hero::after {
+    content:'☁️'; position: absolute; right: 14px; top: 8px;
+    font-size: 72px; opacity: 0.18; line-height: 1;
+  }
+  .weather-location {
+    font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.6);
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .weather-temp {
+    font-family: 'Merriweather', serif;
+    font-size: 58px; font-weight: 900; color: #fff; line-height: 1;
+    margin-bottom: 4px;
+  }
+  .weather-condition {
+    font-size: 16px; font-weight: 600; color: rgba(255,255,255,0.85);
+    margin-bottom: 16px;
+  }
+  .weather-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .weather-pill {
+    background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 100px; padding: 5px 13px;
+    font-size: 12px; font-weight: 600; color: #fff;
+  }
+  .weather-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; margin-bottom: 16px;
+  }
+  .weather-stat-box {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 16px; padding: 16px 14px;
+    box-shadow: var(--shadow); animation: fadeUp 0.4s ease both;
+  }
+  .wsb-icon { font-size: 22px; margin-bottom: 6px; }
+  .wsb-val {
+    font-family: 'Merriweather', serif;
+    font-size: 22px; font-weight: 900; color: var(--forest); margin-bottom: 2px;
+  }
+  .wsb-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .ai-advice-box {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 18px; overflow: hidden;
+    box-shadow: var(--shadow); animation: fadeUp 0.4s 0.1s ease both;
+    margin-bottom: 16px;
+  }
+  .aab-header {
+    background: linear-gradient(90deg, var(--forest), var(--forest-md));
+    padding: 14px 18px; display: flex; align-items: center; gap: 8px;
+  }
+  .aab-header-text { font-size: 13px; font-weight: 700; color: #fff; }
+  .aab-body { padding: 16px 18px; }
+  .advice-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+  }
+  .advice-row:last-child { border-bottom: none; }
+  .advice-icon { font-size: 20px; flex-shrink: 0; }
+  .advice-text { font-size: 13.5px; line-height: 1.6; color: var(--forest); }
+  .advice-text strong { color: var(--forest-md); }
+  .weather-refresh-btn {
+    width: 100%; padding: 14px; border-radius: 14px;
+    border: 2px solid var(--border); background: var(--white);
+    font-size: 14px; font-weight: 600; color: var(--forest);
+    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all 0.2s; box-shadow: var(--shadow);
+  }
+  .weather-refresh-btn:hover { background: var(--bg); border-color: var(--forest-lt); }
+
+  /* ── HISTORY PAGE ── */
+  .history-container { padding: 20px 20px 100px; }
+  .history-empty {
+    text-align: center; padding: 60px 20px;
+    animation: fadeUp 0.4s ease both;
+  }
+  .history-empty-icon { font-size: 56px; margin-bottom: 16px; }
+  .history-empty-title {
+    font-family: 'Merriweather', serif;
+    font-size: 20px; font-weight: 900; color: var(--forest); margin-bottom: 8px;
+  }
+  .history-empty-sub { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
+  .history-start-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 22px; background: var(--gold); border: none;
+    border-radius: 100px; font-size: 13px; font-weight: 700;
+    color: var(--forest); cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    box-shadow: 0 4px 14px rgba(232,168,32,0.4); transition: all 0.2s;
+  }
+  .history-start-btn:hover { background: var(--gold-lt); }
+  .history-header-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .history-count {
+    font-size: 11px; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .history-clear-btn {
+    font-size: 12px; font-weight: 600; color: #ef4444;
+    background: none; border: none; cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .history-entry {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 18px; overflow: hidden;
+    box-shadow: var(--shadow); margin-bottom: 12px;
+    animation: fadeUp 0.4s ease both;
+  }
+  .history-entry-header {
+    background: linear-gradient(90deg, var(--forest), var(--forest-md));
+    padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .history-crop { font-size: 13px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px; }
+  .history-time { font-size: 10px; color: rgba(255,255,255,0.6); }
+  .history-entry-body { padding: 14px 16px; }
+  .history-disease { font-family: 'Merriweather', serif; font-size: 17px; font-weight: 700; color: var(--forest); margin-bottom: 6px; }
+  .history-symptoms { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+  .history-sensors {
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .history-sensor-tag {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 100px; padding: 3px 10px;
+    font-size: 10px; font-weight: 600; color: var(--forest-md);
+  }
+
+  /* ── SHOPS PAGE ── */
+  .shops-container { padding: 20px 20px 100px; }
+  .shops-hero {
+    border-radius: 20px;
+    background: linear-gradient(135deg, #4a4a00 0%, #6b6b00 60%, #8a8a00 100%);
+    padding: 22px 20px; margin-bottom: 16px;
+    position: relative; overflow: hidden;
+    box-shadow: var(--shadow-lg); animation: fadeUp 0.4s ease both;
+  }
+  .shops-hero::after {
+    content:'🏪'; position: absolute; right: 14px; top: 8px;
+    font-size: 72px; opacity: 0.18; line-height: 1;
+  }
+  .shops-hero-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+  .shops-hero-title { font-family: 'Merriweather', serif; font-size: 22px; font-weight: 900; color: #fff; margin-bottom: 4px; }
+  .shops-hero-sub { font-size: 12px; color: rgba(255,255,255,0.6); }
+  .shops-search-box {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 18px; padding: 18px;
+    box-shadow: var(--shadow); margin-bottom: 16px;
+    animation: fadeUp 0.4s 0.1s ease both;
+  }
+  .shops-search-title { font-size: 13px; font-weight: 700; color: var(--forest); margin-bottom: 12px; }
+  .shops-locate-btn {
+    width: 100%; padding: 14px; border-radius: 14px; border: none;
+    background: var(--gold); color: var(--forest);
+    font-size: 14px; font-weight: 700;
+    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all 0.2s; box-shadow: 0 4px 14px rgba(232,168,32,0.35);
+    margin-bottom: 10px;
+  }
+  .shops-locate-btn:hover { background: var(--gold-lt); transform: translateY(-1px); }
+  .shops-or { text-align: center; font-size: 11px; color: var(--muted); font-weight: 600; margin-bottom: 10px; }
+  .shops-manual-row { display: flex; gap: 8px; }
+  .shops-input {
+    flex: 1; border: 1.5px solid var(--border); border-radius: 12px;
+    padding: 11px 14px; font-size: 14px; font-weight: 500;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: var(--forest); background: var(--bg);
+    outline: none; transition: border-color 0.2s;
+  }
+  .shops-input:focus { border-color: var(--gold); }
+  .shops-go-btn {
+    padding: 11px 18px; border-radius: 12px; border: none;
+    background: var(--forest); color: #fff;
+    font-size: 13px; font-weight: 700;
+    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: all 0.2s;
+  }
+  .shops-go-btn:hover { background: var(--forest-md); }
+  .shops-quick-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    margin-bottom: 16px; animation: fadeUp 0.4s 0.15s ease both;
+  }
+  .shops-quick-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 16px; padding: 16px 14px;
+    cursor: pointer; transition: all 0.2s;
+    box-shadow: var(--shadow); text-align: center;
+  }
+  .shops-quick-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); border-color: var(--gold); }
+  .sqc-icon { font-size: 28px; margin-bottom: 8px; }
+  .sqc-title { font-size: 12px; font-weight: 700; color: var(--forest); margin-bottom: 3px; }
+  .sqc-sub { font-size: 10px; color: var(--muted); }
+  .shops-tips {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 18px; padding: 16px 18px;
+    box-shadow: var(--shadow); animation: fadeUp 0.4s 0.2s ease both;
+  }
+  .shops-tips-title { font-size: 11px; font-weight: 700; color: var(--forest-md); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+  .tip-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid var(--border);
+    font-size: 13px; color: var(--forest); line-height: 1.5;
+  }
+  .tip-row:last-child { border-bottom: none; }
+  .tip-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── OFFLINE BANNER ── */
+  .offline-banner {
+    display: none;
+    background: #fff3cd; border-bottom: 2px solid #f0c040;
+    padding: 10px 20px; text-align: center;
+    font-size: 13px; font-weight: 600; color: #7c4a00;
+    position: sticky; top: 58px; z-index: 95;
+  }
+  .offline-banner.show { display: block; }
+
+  /* ── WEATHER MINI BANNER (home page) ── */
+  .weather-mini {
+    margin: 0 20px 16px;
+    background: linear-gradient(120deg, #1565C0 0%, #1976D2 70%, #42A5F5 100%);
+    border-radius: 18px; padding: 14px 18px;
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer; transition: all 0.2s;
+    box-shadow: var(--shadow); position: relative; overflow: hidden;
+    animation: fadeUp 0.5s 0.28s ease both;
+  }
+  .weather-mini::after {
+    content: '⛅'; position: absolute; right: 12px; top: 4px;
+    font-size: 52px; opacity: 0.15; line-height: 1;
+  }
+  .weather-mini:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .wm-temp {
+    font-family: 'Merriweather', Georgia, serif;
+    font-size: 32px; font-weight: 900; color: #fff; line-height: 1; flex-shrink: 0;
+  }
+  .wm-right { flex: 1; min-width: 0; }
+  .wm-condition { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9); margin-bottom: 4px; }
+  .wm-advice {
+    font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 100px;
+    display: inline-block;
+  }
+  .wm-advice.good { background: rgba(74,222,128,0.25); color: #a7f3d0; }
+  .wm-advice.bad  { background: rgba(239,68,68,0.25);  color: #fca5a5; }
+  .wm-advice.warn { background: rgba(250,204,21,0.25); color: #fef08a; }
+  .wm-tap { font-size: 10px; color: rgba(255,255,255,0.45); margin-left: auto; flex-shrink: 0; padding-right: 8px; }
+
+  /* ── GROWTH STAGE ── */
+  .growth-stage-section { margin-bottom: 16px; }
+  .stage-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+  }
+  .stage-card {
+    background: var(--white); border: 2px solid var(--border);
+    border-radius: 12px; padding: 10px 6px;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    cursor: pointer; transition: all 0.2s; text-align: center;
+    font-size: 11px; font-weight: 600; color: var(--muted); box-shadow: var(--shadow);
+  }
+  .stage-card .stage-emoji { font-size: 22px; }
+  .stage-card.selected {
+    border-color: var(--forest-md); background: #E8F0E8;
+    color: var(--forest); box-shadow: 0 0 0 3px rgba(45,90,45,0.15);
+  }
+  .stage-note-box {
+    background: #E8F0E8; border: 1.5px solid rgba(45,90,45,0.25);
+    border-radius: 12px; padding: 12px 14px; margin-top: 10px;
+    font-size: 12.5px; line-height: 1.6; color: var(--forest);
+    display: none;
+  }
+  .stage-note-box.show { display: block; animation: fadeUp 0.3s ease both; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">
+    <div class="logo-icon">🌾</div>
+    <div class="logo-text">Agri<span>Advisor</span> AI</div>
+  </div>
+  <div class="lang-switcher">
+    <button class="lang-btn active">EN</button>
+    <button class="lang-btn">ಕನ್ನಡ</button>
+    <button class="lang-btn">हिन्दी</button>
+  </div>
+</nav>
+
+<!-- OFFLINE BANNER -->
+<div class="offline-banner" id="offline-banner">
+  📡 You're offline — weather and AI features won't work, but diagnosis and fertilizer advice still work!
+</div>
+
+<!-- SENSOR BAR -->
+<div class="sensor-bar" id="sensor-bar">
+  <div class="sensor-dot loading" id="sensor-dot"></div>&nbsp;
+  <div class="sensor-pill loading" id="sp-temp"><span class="s-icon">🌡️</span> <span id="t-sensor-temp">Temp</span>: <span class="s-val" id="sv-temp">--°C</span></div>
+  <div class="sensor-pill loading" id="sp-hum"><span class="s-icon">💧</span> <span id="t-sensor-hum">Humidity</span>: <span class="s-val" id="sv-hum">--%</span></div>
+  <div class="sensor-pill loading" id="sp-soil"><span class="s-icon">🌱</span> <span id="t-sensor-soil">Soil</span>: <span class="s-val" id="sv-soil">--%</span></div>
+  <div class="sensor-pill loading" id="sp-light"><span class="s-icon">☀️</span> <span id="t-sensor-light">Light</span>: <span class="s-val" id="sv-light">-- lux</span></div>
+  <button class="sensor-refresh" id="t-sensor-refresh" onclick="fetchSensorData()">⟳ Refresh</button>
+</div>
+
+<!-- ═══ HOME ═══ -->
+<div id="home" class="page active">
+  <section class="hero">
+    <div class="hero-eyebrow"><div class="eyebrow-dot"></div><span id="t-hero-eyebrow">AI-Powered Agriculture</span></div>
+    <h1 class="hero-headline"><span id="t-hero-h1">Smarter farming</span><br><span id="t-hero-h2">starts with </span><span class="hl-gold hl-italic" id="t-hero-gold">better data</span></h1>
+    <p class="hero-sub" id="t-hero-sub">Upload a crop leaf photo to instantly detect pests and diseases, or enter your soil readings to get a precise fertilizer prescription — built for real farmers, not just demos.</p>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-num"><span>38</span></div><div class="stat-label" id="t-stat-label-1">Disease<br>Classes</div></div>
+      <div class="stat"><div class="stat-num"><span>14</span></div><div class="stat-label" id="t-stat-label-2">Crops<br>Supported</div></div>
+      <div class="stat"><div class="stat-num">AI</div><div class="stat-label" id="t-stat-label-3">Powered<br>by CNN</div></div>
+    </div>
+  </section>
+
+  <!-- WEATHER MINI BANNER -->
+  <div class="weather-mini" id="weather-mini" onclick="openPage('weather-page'); loadWeather()">
+    <div class="wm-temp" id="wm-temp">--°</div>
+    <div class="wm-right">
+      <div class="wm-condition" id="wm-condition">Loading weather...</div>
+      <div class="wm-advice warn" id="wm-advice">📡 Tap for full farm advisory</div>
+    </div>
+    <div class="wm-tap">→</div>
+  </div>
+
+  <div class="hero-banner">
+    <div class="banner-label" id="t-banner-label">Get started now</div>
+    <div class="banner-title"><span id="t-banner-title-1">Diagnose your crop</span><br><span id="t-banner-title-2">in </span><span id="t-banner-title-gold">3 quick taps</span></div>
+    <button class="banner-cta" id="t-banner-cta" onclick="openPage('pest-page')">🔍 Start Diagnosis →</button>
+  </div>
+
+  <section class="features-section">
+    <div class="section-label" id="t-section-choose">Choose a feature</div>
+    <div class="feature-card" onclick="openPage('pest-page')">
+      <div class="card-top"><div class="card-icon-wrap icon-gold">🔍</div><div class="card-arrow">→</div></div>
+      <div class="card-title" id="t-card1-title">Pest & Disease Detection</div>
+      <div class="card-desc" id="t-card1-desc">Tap your crop, choose a symptom, pick where on the plant — get an instant diagnosis and treatment plan in 3 taps. Optional leaf photo for extra accuracy.</div>
+      <div class="tags"><span class="tag">3-Tap Diagnosis</span><span class="tag">12 Crops</span><span class="tag">Instant Result</span></div>
+      <span class="card-link" id="t-card1-link">Open feature <span class="arr">→</span></span>
+    </div>
+    <div class="feature-card" onclick="openPage('fertilizer-page')">
+      <div class="card-top"><div class="card-icon-wrap icon-green">🌱</div><div class="card-arrow">→</div></div>
+      <div class="card-title" id="t-card2-title">Fertilizer Advisor</div>
+      <div class="card-desc" id="t-card2-desc">Enter your soil sensor readings — NPK levels, pH, and moisture — to get a precise fertilizer prescription with a clear shopping list and application guide.</div>
+      <div class="tags"><span class="tag">Soil Intelligence</span><span class="tag">14 Crops</span><span class="tag">NPK Analysis</span></div>
+      <span class="card-link" id="t-card2-link">Open feature <span class="arr">→</span></span>
+    </div>
+    <div class="feature-card" onclick="openPage('weather-page'); loadWeather()">
+      <div class="card-top"><div class="card-icon-wrap icon-sky">⛅</div><div class="card-arrow">→</div></div>
+      <div class="card-title" id="t-card3-title">Weather Advisor</div>
+      <div class="card-desc" id="t-card3-desc">Get live weather at your farm location and an AI recommendation on whether today is a good day to spray or apply fertilizer.</div>
+      <div class="tags"><span class="tag">Live Weather</span><span class="tag">Spray Advice</span><span class="tag">Geolocation</span></div>
+      <span class="card-link" id="t-card3-link">Open feature <span class="arr">→</span></span>
+    </div>
+    <div class="feature-card" onclick="openPage('history-page'); renderHistory()">
+      <div class="card-top"><div class="card-icon-wrap icon-peach">📋</div><div class="card-arrow">→</div></div>
+      <div class="card-title" id="t-card4-title">Scan History</div>
+      <div class="card-desc" id="t-card4-desc">Every leaf you analyse gets saved with the sensor readings at that moment — so you can spot patterns like "high humidity → Late Blight" over time.</div>
+      <div class="tags"><span class="tag">Session Log</span><span class="tag">Sensor Snapshot</span><span class="tag">History</span></div>
+      <span class="card-link" id="t-card4-link">Open feature <span class="arr">→</span></span>
+    </div>
+    <div class="feature-card" onclick="openPage('shops-page')">
+      <div class="card-top"><div class="card-icon-wrap icon-forest">🏪</div><div class="card-arrow">→</div></div>
+      <div class="card-title" id="t-card5-title">Nearby Agri Shops</div>
+      <div class="card-desc" id="t-card5-desc">Uses your GPS location to find agricultural supply shops near you. Find fertilizers, seeds, and pesticides locally with one tap.</div>
+      <div class="tags"><span class="tag">GPS Locator</span><span class="tag">Google Maps</span><span class="tag">Agri Shops</span></div>
+      <span class="card-link" id="t-card5-link">Open feature <span class="arr">→</span></span>
+    </div>
+  </section>
+</div>
+
+<!-- ═══ STEP 1: CROP ═══ -->
+<div id="pest-page" class="page">
+  <div class="page-header"><button class="back-btn t-back-home" onclick="openPage('home')">← Back to Home</button></div>
+  <div class="stepper">
+    <div class="step active"><div class="step-circle">1</div><div class="step-name t-step-crop">Crop</div></div>
+    <div class="step-line"></div>
+    <div class="step"><div class="step-circle">2</div><div class="step-name t-step-symptom">Symptom</div></div>
+    <div class="step-line"></div>
+    <div class="step"><div class="step-circle">3</div><div class="step-name t-step-location">Location</div></div>
+    <div class="step-line"></div>
+    <div class="step"><div class="step-circle">✓</div><div class="step-name t-step-result">Result</div></div>
+  </div>
+  <div class="page-title" id="t-page-title-crop">Which crop is affected?</div>
+  <div class="page-subtitle" id="t-page-sub-crop">Tap your crop to continue</div>
+
+  <!-- Photo upload zone (fixed) -->
+  <div class="photo-upload-zone" id="upload-zone">
+    <input type="file" accept="image/*" id="leaf-photo-input" style="display:none">
+    <div class="upload-icon" id="upload-icon">📷</div>
+    <div class="upload-title" id="upload-title">Optional: Upload a leaf photo</div>
+    <div class="upload-sub" id="t-upload-sub">AI will analyse it for a more accurate result</div>
+    <img class="upload-preview" id="upload-preview" src="" alt="Leaf preview">
+    <div class="upload-badge" id="upload-badge" style="display:none">✓ Photo added — AI will analyse it</div>
+  </div>
+  <div class="crop-grid">
+    <div class="crop-card" onclick="selectCrop(this,'Tomato')"><div class="crop-emoji">🍅</div>Tomato</div>
+    <div class="crop-card" onclick="selectCrop(this,'Potato')"><div class="crop-emoji">🥔</div>Potato</div>
+    <div class="crop-card" onclick="selectCrop(this,'Wheat')"><div class="crop-emoji">🌾</div>Wheat</div>
+    <div class="crop-card" onclick="selectCrop(this,'Maize')"><div class="crop-emoji">🌽</div>Maize</div>
+    <div class="crop-card" onclick="selectCrop(this,'Rice')"><div class="crop-emoji">🍚</div>Rice</div>
+    <div class="crop-card" onclick="selectCrop(this,'Onion')"><div class="crop-emoji">🧅</div>Onion</div>
+    <div class="crop-card" onclick="selectCrop(this,'Brinjal')"><div class="crop-emoji">🍆</div>Brinjal</div>
+    <div class="crop-card" onclick="selectCrop(this,'Pepper')"><div class="crop-emoji">🌶️</div>Pepper</div>
+    <div class="crop-card" onclick="selectCrop(this,'Grapes')"><div class="crop-emoji">🍇</div>Grapes</div>
+    <div class="crop-card" onclick="selectCrop(this,'Peach')"><div class="crop-emoji">🍑</div>Peach</div>
+    <div class="crop-card" onclick="selectCrop(this,'Apple')"><div class="crop-emoji">🍎</div>Apple</div>
+    <div class="crop-card" onclick="selectCrop(this,'Soybean')"><div class="crop-emoji">🫘</div>Soybean</div>
+  </div>
+  <div class="bottom-bar">
+    <button class="btn-secondary t-back-home" onclick="openPage('home')">← Back</button>
+    <button class="btn-primary" id="step1-next" disabled onclick="goToStep2()" id="t-btn-next-symptom">Next — Pick Symptom →</button>
+  </div>
+</div>
+
+<!-- ═══ STEP 2: SYMPTOM ═══ -->
+<div id="symptom-page" class="page">
+  <div class="page-header"><button class="back-btn t-back-home" onclick="openPage('home')">← Back to Home</button></div>
+  <div class="stepper">
+    <div class="step done"><div class="step-circle">✓</div><div class="step-name t-step-crop">Crop</div></div>
+    <div class="step-line done"></div>
+    <div class="step active"><div class="step-circle">2</div><div class="step-name t-step-symptom">Symptom</div></div>
+    <div class="step-line"></div>
+    <div class="step"><div class="step-circle">3</div><div class="step-name t-step-location">Location</div></div>
+    <div class="step-line"></div>
+    <div class="step"><div class="step-circle">✓</div><div class="step-name t-step-result">Result</div></div>
+  </div>
+  <div class="page-title" id="t-page-title-symptom">What do you see?</div>
+  <div class="page-subtitle" id="t-page-sub-symptom">Tap all symptoms that match</div>
+  <div class="multi-hint" id="t-multi-hint">✦ You can select multiple symptoms</div>
+  <div class="symptom-grid">
+    <div class="symptom-card" onclick="selectSymptom(this,'Leaves turning yellow')"><div class="symptom-icon">🟡</div><span id="t-symptom-1">Leaves turning yellow</span></div>
+    <div class="symptom-card" onclick="selectSymptom(this,'Brown / black spots')"><div class="symptom-icon">🟤</div><span id="t-symptom-2">Brown / black spots</span></div>
+    <div class="symptom-card" onclick="selectSymptom(this,'Wilting / drooping')"><div class="symptom-icon">💧</div><span id="t-symptom-3">Wilting / drooping</span></div>
+    <div class="symptom-card" onclick="selectSymptom(this,'White powder on leaves')"><div class="symptom-icon">⚪</div><span id="t-symptom-4">White powder on leaves</span></div>
+    <div class="symptom-card" onclick="selectSymptom(this,'Holes in leaves')"><div class="symptom-icon">⚫</div><span id="t-symptom-5">Holes in leaves</span></div>
+    <div class="symptom-card" onclick="selectSymptom(this,'Mold / fuzzy growth')"><div class="symptom-icon">🟢</div><span id="t-symptom-6">Mold / fuzzy growth</span></div>
+    <div class="symptom-card" onclick="selectSymptom(this,'Curling / deformed leaves')"><div class="symptom-icon">🌀</div><span id="t-symptom-7">Curling / deformed leaves</span></div>
+    <div class="symptom-card" onclick="selectSymptom(this,'Sticky / slimy residue')"><div class="symptom-icon">💦</div><span id="t-symptom-8">Sticky / slimy residue</span></div>
+    <div class="symptom-card" onclick="selectSymptom(this,'Rust coloured patches')"><div class="symptom-icon">🔶</div><span id="t-symptom-9">Rust coloured patches</span></div>
+    <div class="symptom-card" onclick="selectSymptom(this,'Insects / bugs visible')"><div class="symptom-icon">🐛</div><span id="t-symptom-10">Insects / bugs visible</span></div>
+  </div>
+  <div class="bottom-bar">
+    <button class="btn-secondary" onclick="openPage('pest-page')">← Back</button>
+    <button class="btn-primary" id="step2-next" disabled onclick="goToStep3()"><span id="t-btn-next-location">Next — Pick Location →</span></button>
+  </div>
+</div>
+
+<!-- ═══ STEP 3: LOCATION ═══ -->
+<div id="location-page" class="page">
+  <div class="page-header"><button class="back-btn t-back-home" onclick="openPage('home')">← Back to Home</button></div>
+  <div class="stepper">
+    <div class="step done"><div class="step-circle">✓</div><div class="step-name t-step-crop">Crop</div></div>
+    <div class="step-line done"></div>
+    <div class="step done"><div class="step-circle">✓</div><div class="step-name t-step-symptom">Symptom</div></div>
+    <div class="step-line done"></div>
+    <div class="step active"><div class="step-circle">3</div><div class="step-name t-step-location">Location</div></div>
+    <div class="step-line"></div>
+    <div class="step"><div class="step-circle">✓</div><div class="step-name t-step-result">Result</div></div>
+  </div>
+  <div class="page-title" id="t-page-title-location">Where on the plant?</div>
+  <div class="page-subtitle" id="t-page-sub-location">Where are the symptoms most visible?</div>
+  <div class="location-grid">
+    <div class="location-card" onclick="selectLocation(this,'Leaves')"><div class="location-icon">🍃</div><span id="t-loc-1">Leaves</span></div>
+    <div class="location-card" onclick="selectLocation(this,'Stem / stalk')"><div class="location-icon">🌿</div><span id="t-loc-2">Stem / stalk</span></div>
+    <div class="location-card" onclick="selectLocation(this,'Fruit / pods')"><div class="location-icon">🫑</div><span id="t-loc-3">Fruit / pods</span></div>
+    <div class="location-card" onclick="selectLocation(this,'Roots / base')"><div class="location-icon">🌱</div><span id="t-loc-4">Roots / base</span></div>
+    <div class="location-card" onclick="selectLocation(this,'Flowers / buds')"><div class="location-icon">🌸</div><span id="t-loc-5">Flowers / buds</span></div>
+    <div class="location-card" onclick="selectLocation(this,'Whole plant')"><div class="location-icon">🌾</div><span id="t-loc-6">Whole plant</span></div>
+  </div>
+  <div class="bottom-bar">
+    <button class="btn-secondary" onclick="openPage('symptom-page')">← Back</button>
+    <button class="btn-primary" id="step3-next" disabled onclick="showResult()"><span id="t-btn-diagnose">🔍 Get AI Diagnosis →</span></button>
+  </div>
+</div>
+
+<!-- ═══ DISEASE RESULT ═══ -->
+<div id="result-page" class="page">
+  <div class="page-header"><button class="back-btn" onclick="openPage('home')">← Back to Home</button></div>
+  <div class="result-wrap" id="disease-result-wrap"><!-- Populated dynamically --></div>
+</div>
+
+<!-- ═══ FERTILIZER ═══ -->
+<div id="fertilizer-page" class="page">
+  <div class="page-header"><button class="back-btn t-back-home" onclick="openPage('home')">← Back to Home</button></div>
+  <div class="page-title" id="t-fert-title">🌱 Fertilizer Advisor</div>
+  <div class="page-subtitle" id="t-fert-sub">Enter your soil sensor readings for a prescription</div>
+
+  <div class="fert-section" style="padding-bottom:130px">
+    <div class="fert-label" id="t-fert-select-crop">🌾 Select Crop</div>
+    <div class="fert-crop-grid">
+      <div class="fert-crop-card" onclick="selectFertCrop(this,'Rice')"><div class="fc-emoji">🍚</div>Rice</div>
+      <div class="fert-crop-card" onclick="selectFertCrop(this,'Wheat')"><div class="fc-emoji">🌾</div>Wheat</div>
+      <div class="fert-crop-card" onclick="selectFertCrop(this,'Maize')"><div class="fc-emoji">🌽</div>Maize</div>
+      <div class="fert-crop-card" onclick="selectFertCrop(this,'Cotton')"><div class="fc-emoji">🌿</div>Cotton</div>
+      <div class="fert-crop-card" onclick="selectFertCrop(this,'Sugarcane')"><div class="fc-emoji">🎋</div>Sugarcane</div>
+      <div class="fert-crop-card" onclick="selectFertCrop(this,'Tomato')"><div class="fc-emoji">🍅</div>Tomato</div>
+      <div class="fert-crop-card" onclick="selectFertCrop(this,'Potato')"><div class="fc-emoji">🥔</div>Potato</div>
+      <div class="fert-crop-card" onclick="selectFertCrop(this,'Onion')"><div class="fc-emoji">🧅</div>Onion</div>
+      <div class="fert-crop-card" onclick="selectFertCrop(this,'Brinjal')"><div class="fc-emoji">🍆</div>Brinjal</div>
+      <div class="fert-crop-card" onclick="selectFertCrop(this,'Soybean')"><div class="fc-emoji">🫘</div>Soybean</div>
+      <div class="fert-crop-card" onclick="selectFertCrop(this,'Groundnut')"><div class="fc-emoji">🥜</div>Groundnut</div>
+      <div class="fert-crop-card" onclick="selectFertCrop(this,'Sunflower')"><div class="fc-emoji">🌻</div>Sunflower</div>
+    </div>
+
+    <!-- GROWTH STAGE -->
+    <div class="fert-label">🌱 Crop Growth Stage</div>
+    <div class="growth-stage-section">
+      <div class="stage-grid">
+        <div class="stage-card" onclick="selectStage(this,'sowing')"><div class="stage-emoji">🌱</div>Sowing</div>
+        <div class="stage-card" onclick="selectStage(this,'vegetative')"><div class="stage-emoji">🌿</div>Vegetative</div>
+        <div class="stage-card" onclick="selectStage(this,'flowering')"><div class="stage-emoji">🌸</div>Flowering</div>
+        <div class="stage-card" onclick="selectStage(this,'harvest')"><div class="stage-emoji">🌾</div>Harvest</div>
+      </div>
+      <div class="stage-note-box" id="stage-note-box"></div>
+    </div>
+
+    <div class="fert-label" id="t-fert-npk-label">🧪 Soil NPK Readings (kg/ha)</div>
+    <div class="npk-row">
+      <div class="npk-box">
+        <div class="npk-letter npk-n">N</div>
+        <div class="npk-name" id="t-npk-n-name">Nitrogen</div>
+        <input class="npk-input" id="fert-n" type="number" min="0" max="200" placeholder="0" oninput="checkFertReady()">
+        <div class="npk-unit">kg/ha</div>
+      </div>
+      <div class="npk-box">
+        <div class="npk-letter npk-p">P</div>
+        <div class="npk-name" id="t-npk-p-name">Phosphorus</div>
+        <input class="npk-input" id="fert-p" type="number" min="0" max="200" placeholder="0" oninput="checkFertReady()">
+        <div class="npk-unit">kg/ha</div>
+      </div>
+      <div class="npk-box">
+        <div class="npk-letter npk-k">K</div>
+        <div class="npk-name" id="t-npk-k-name">Potassium</div>
+        <input class="npk-input" id="fert-k" type="number" min="0" max="200" placeholder="0" oninput="checkFertReady()">
+        <div class="npk-unit">kg/ha</div>
+      </div>
+    </div>
+    <div class="ph-moisture-row">
+      <div class="pm-box">
+        <div class="pm-label" id="t-ph-label">⚗️ Soil pH</div>
+        <input class="pm-input" id="fert-ph" type="number" min="3" max="10" step="0.1" placeholder="e.g. 6.5" oninput="checkFertReady()">
+      </div>
+      <div class="pm-box">
+        <div class="pm-label" id="t-moisture-label">💧 Moisture %</div>
+        <input class="pm-input" id="fert-moisture" type="number" min="0" max="100" placeholder="e.g. 40" oninput="checkFertReady()">
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-bar">
+    <button class="btn-secondary t-back-home" onclick="openPage('home')">← Back</button>
+    <button class="btn-primary" id="fert-submit-btn" disabled onclick="getFertilizerAdvice()"><span id="t-btn-get-prescription">🌱 Get Prescription →</span></button>
+  </div>
+</div>
+
+<!-- ═══ FERTILIZER RESULT ═══ -->
+<div id="fertilizer-result-page" class="page">
+  <div class="page-header"><button class="back-btn" onclick="openPage('home')">← Back to Home</button></div>
+  <div class="result-wrap" id="fert-result-wrap"><!-- Populated dynamically --></div>
+</div>
+
+<!-- ═══ WEATHER ADVISOR ═══ -->
+<div id="weather-page" class="page">
+  <div class="page-header"><button class="back-btn" onclick="openPage('home')">← Back to Home</button></div>
+  <div class="weather-container" id="weather-container">
+    <div class="ai-loading" style="margin-top:40px">
+      <div class="ai-spinner"></div>
+      <div class="ai-loading-text">Fetching weather data...</div>
+      <div class="ai-loading-sub">Getting your location</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SCAN HISTORY ═══ -->
+<div id="history-page" class="page">
+  <div class="page-header"><button class="back-btn t-back-home" onclick="openPage('home')">← Back to Home</button></div>
+  <div class="page-title" id="t-history-title">📋 Scan History</div>
+  <div class="page-subtitle" id="t-history-sub">All diagnoses from this session</div>
+  <div class="history-container" id="history-container"><!-- Populated dynamically --></div>
+</div>
+
+<!-- ═══ NEARBY SHOPS ═══ -->
+<div id="shops-page" class="page">
+  <div class="page-header"><button class="back-btn" onclick="openPage('home')">← Back to Home</button></div>
+  <div class="shops-container">
+    <div class="shops-hero">
+      <div class="shops-hero-label" id="t-shops-label">Find local suppliers</div>
+      <div class="shops-hero-title" id="t-shops-title">Nearby Agri Shops</div>
+      <div class="shops-hero-sub" id="t-shops-sub">GPS-powered search for seeds, fertilizers & pesticides</div>
+    </div>
+
+    <div class="shops-search-box">
+      <div class="shops-search-title" id="t-shops-search-title">📍 Find shops near you</div>
+      <button class="shops-locate-btn" id="t-shops-gps-btn" onclick="findShopsNearMe()">📡 Use My GPS Location</button>
+      <div class="shops-or" id="t-shops-or">— or enter a location manually —</div>
+      <div class="shops-manual-row">
+        <input class="shops-input" id="shops-location-input" placeholder="e.g. Yelahanka, Bengaluru" onkeydown="if(event.key==='Enter') searchShopsManual()">
+        <button class="shops-go-btn" id="t-shops-go" onclick="searchShopsManual()">Search</button>
+      </div>
+    </div>
+
+    <div class="section-label" id="t-quick-searches" style="padding: 0 0 0 0; margin-bottom:10px">Quick Searches</div>
+    <div class="shops-quick-grid">
+      <div class="shops-quick-card" onclick="searchCategory('fertilizer shops')">
+        <div class="sqc-icon">🌱</div>
+        <div class="sqc-title">Fertilizer Shops</div>
+        <div class="sqc-sub">NPK, compost, manure</div>
+      </div>
+      <div class="shops-quick-card" onclick="searchCategory('pesticide shops')">
+        <div class="sqc-icon">🧪</div>
+        <div class="sqc-title">Pesticide Shops</div>
+        <div class="sqc-sub">Fungicides, insecticides</div>
+      </div>
+      <div class="shops-quick-card" onclick="searchCategory('seeds shop agricultural')">
+        <div class="sqc-icon">🌾</div>
+        <div class="sqc-title">Seed Suppliers</div>
+        <div class="sqc-sub">Hybrid & certified seeds</div>
+      </div>
+      <div class="shops-quick-card" onclick="searchCategory('krishi vigyan kendra')">
+        <div class="sqc-icon">🏫</div>
+        <div class="sqc-title">KVK Centers</div>
+        <div class="sqc-sub">Expert farm advice</div>
+      </div>
+    </div>
+
+    <div class="shops-tips">
+      <div class="shops-tips-title" id="t-tips-title">💡 Shopping Tips</div>
+      <div class="tip-row"><div class="tip-icon">🏷️</div>Always ask for BIS-certified fertilizers and licensed pesticides from a registered dealer.</div>
+      <div class="tip-row"><div class="tip-icon">📋</div>Carry your soil test report to get the exact grade (e.g. 10-26-26 NPK) recommended for your crop.</div>
+      <div class="tip-row"><div class="tip-icon">⚖️</div>Buy in exact quantities — overstocking fertilizers reduces their effectiveness over time.</div>
+      <div class="tip-row"><div class="tip-icon">🏦</div>Check for PM-KISAN and State government subsidy cards — many shops accept them for discounts.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── GLOBAL STATE ──
+  let selectedCrop='', selectedSymptoms=[], selectedLocation='';
+  let fertSelectedCrop='', leafPhotoBase64='', leafPhotoMime='';
+  let scanHistory = [];
+  let sensorData = { temp: null, humidity: null, soilMoisture: null, light: null };
+  let currentStage = null;
+
+  // ── OFFLINE DETECTION ────────────────────────
+  function updateOnlineStatus() {
+    const banner = document.getElementById('offline-banner');
+    if (!navigator.onLine) {
+      banner.classList.add('show');
+    } else {
+      banner.classList.remove('show');
+    }
+  }
+  window.addEventListener('online',  updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+  updateOnlineStatus();
+
+  // ── GROWTH STAGE ─────────────────────────────
+  const STAGE_NOTES = {
+    sowing:     '🌱 <b>Sowing Stage:</b> Apply full phosphorus as basal dose. Keep nitrogen low — excess N burns seedlings. Focus on root development.',
+    vegetative: '🌿 <b>Vegetative Stage:</b> Peak nitrogen demand. Top-dress with urea for maximum leaf and stem growth. Split N application for best results.',
+    flowering:  '🌸 <b>Flowering Stage:</b> High potassium demand for fruit set. Reduce nitrogen to avoid excess vegetative growth over flowers.',
+    harvest:    '🌾 <b>Harvest Stage:</b> Minimal fertilizer needed. Focus potassium to improve crop quality and storage life. Avoid nitrogen.',
+  };
+
+  const STAGE_MULT = {
+    sowing:     { N: 0.2, P: 1.0, K: 0.3 },
+    vegetative: { N: 1.0, P: 0.5, K: 0.6 },
+    flowering:  { N: 0.4, P: 0.6, K: 1.0 },
+    harvest:    { N: 0.1, P: 0.2, K: 0.8 },
+  };
+
+  function selectStage(el, stage) {
+    document.querySelectorAll('.stage-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    currentStage = stage;
+    const noteBox = document.getElementById('stage-note-box');
+    noteBox.innerHTML = STAGE_NOTES[stage];
+    noteBox.classList.add('show');
+  }
+
+  // ── WEATHER MINI BANNER ───────────────────────
+  async function loadWeatherMini() {
+    if (!navigator.onLine) return;
+    try {
+      const pos = await new Promise((res, rej) =>
+        navigator.geolocation.getCurrentPosition(res, rej, { timeout: 6000 })
+      );
+      const { latitude: lat, longitude: lon } = pos.coords;
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,relative_humidity_2m,precipitation&timezone=auto`;
+      const r = await fetch(url);
+      const d = await r.json();
+      const c = d.current;
+      const temp = Math.round(c.temperature_2m);
+      const rain = c.precipitation;
+      const humidity = c.relative_humidity_2m;
+
+      const condMap = code => {
+        if (code === 0) return 'Clear Sky ☀️';
+        if (code <= 3) return 'Partly Cloudy ⛅';
+        if (code <= 49) return 'Foggy 🌫️';
+        if (code <= 67) return 'Rainy 🌧️';
+        if (code <= 82) return 'Showers 🌦️';
+        return 'Thunderstorm ⛈️';
+      };
+
+      document.getElementById('wm-temp').textContent = `${temp}°`;
+      document.getElementById('wm-condition').textContent = condMap(c.weather_code);
+
+      const advice = document.getElementById('wm-advice');
+      if (rain > 5) {
+        advice.textContent = '🌧️ Rain today — delay fertilizer application';
+        advice.className = 'wm-advice bad';
+      } else if (humidity > 80) {
+        advice.textContent = '⚠️ High humidity — disease risk elevated';
+        advice.className = 'wm-advice warn';
+      } else {
+        advice.textContent = '✅ Good conditions for spraying & fertilizer';
+        advice.className = 'wm-advice good';
+      }
+    } catch (e) {
+      document.getElementById('wm-condition').textContent = 'Tap to load weather';
+    }
+  }
+
+  // Load weather mini on page load
+  loadWeatherMini();
+
+  // ─────────────────────────────────────────────
+  // SENSOR BAR — simulates Pi microclimate data
+  // In production: replace fetch URL with your Pi's local IP
+  // e.g. http://192.168.1.100/sensors
+  // ─────────────────────────────────────────────
+  function fetchSensorData() {
+    // Simulate realistic sensor readings (replace with real Pi endpoint)
+    const hour = new Date().getHours();
+    const isDaytime = hour >= 6 && hour <= 18;
+
+    // Realistic Karnataka farm values with small random variation
+    sensorData = {
+      temp: (isDaytime ? 28 + Math.random() * 8 : 18 + Math.random() * 6).toFixed(1),
+      humidity: (55 + Math.random() * 35).toFixed(0),
+      soilMoisture: (30 + Math.random() * 45).toFixed(0),
+      light: isDaytime ? Math.floor(15000 + Math.random() * 60000) : Math.floor(Math.random() * 200)
+    };
+
+    // Update sensor bar
+    document.getElementById('sv-temp').textContent = sensorData.temp + '°C';
+    document.getElementById('sv-hum').textContent = sensorData.humidity + '%';
+    document.getElementById('sv-soil').textContent = sensorData.soilMoisture + '%';
+    document.getElementById('sv-light').textContent = Number(sensorData.light).toLocaleString() + ' lux';
+
+    // Remove loading state
+    ['sp-temp','sp-hum','sp-soil','sp-light'].forEach(id => {
+      document.getElementById(id).classList.remove('loading');
+    });
+    const dot = document.getElementById('sensor-dot');
+    dot.classList.remove('loading');
+  }
+
+  // Load sensors on startup
+  fetchSensorData();
+
+  // ── NAVIGATION ──
+  function openPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  // ── DISEASE DETECTION: CROP ──
+  function selectCrop(el, name) {
+    document.querySelectorAll('.crop-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected'); selectedCrop = name;
+    document.getElementById('step1-next').disabled = false;
+  }
+
+  // ── DISEASE DETECTION: SYMPTOM (multi-select) ──
+  function selectSymptom(el, name) {
+    el.classList.toggle('selected');
+    if (el.classList.contains('selected')) {
+      if (!selectedSymptoms.includes(name)) selectedSymptoms.push(name);
+    } else {
+      selectedSymptoms = selectedSymptoms.filter(s => s !== name);
+    }
+    document.getElementById('step2-next').disabled = selectedSymptoms.length === 0;
+  }
+
+  // ── DISEASE DETECTION: LOCATION ──
+  function selectLocation(el, name) {
+    document.querySelectorAll('.location-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected'); selectedLocation = name;
+    document.getElementById('step3-next').disabled = false;
+  }
+
+  function goToStep2() { openPage('symptom-page'); }
+  function goToStep3() { openPage('location-page'); }
+
+  // ── PHOTO UPLOAD (fixed) ──
+  const uploadZone = document.getElementById('upload-zone');
+  const leafInput = document.getElementById('leaf-photo-input');
+
+  // Clicking anywhere on the zone triggers the hidden file input
+  uploadZone.addEventListener('click', function(e) {
+    leafInput.click();
+  });
+
+  leafInput.addEventListener('change', function() {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      leafPhotoMime = file.type;
+      leafPhotoBase64 = dataUrl.split(',')[1];
+      const preview = document.getElementById('upload-preview');
+      preview.src = dataUrl;
+      preview.classList.add('visible');
+      document.getElementById('upload-badge').style.display = 'inline-flex';
+      document.getElementById('upload-icon').textContent = '✅';
+      const titleEl = document.getElementById('upload-title');
+      titleEl.textContent = file.name.substring(0, 28) + (file.name.length > 28 ? '…' : '') + ' — ready';
+      titleEl.dataset.hasPhoto = '1';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // ── DISEASE DETECTION: RESULT via AI ──
+  async function showResult() {
+    openPage('result-page');
+    document.getElementById('disease-result-wrap').innerHTML = `
+      <div class="ai-loading">
+        <div class="ai-spinner"></div>
+        <div class="ai-loading-text">Analysing symptoms...</div>
+        <div class="ai-loading-sub">Checking ${selectedCrop} · ${selectedSymptoms.length} symptom(s)</div>
+      </div>`;
+
+    // Always generate rule-based result first — works 100% offline
+    const ruleResult = buildRuleBasedDiagnosis(selectedCrop, selectedSymptoms, selectedLocation);
+    renderDiseaseResult(ruleResult);
+    saveToHistory(ruleResult);
+
+    // Try to upgrade with AI silently in background
+    try {
+      const symptomsText = selectedSymptoms.join(', ');
+      const userContent = leafPhotoBase64
+        ? [
+            { type: 'image', source: { type: 'base64', media_type: leafPhotoMime, data: leafPhotoBase64 } },
+            { type: 'text', text: buildDiseasePrompt(selectedCrop, symptomsText, selectedLocation) }
+          ]
+        : buildDiseasePrompt(selectedCrop, symptomsText, selectedLocation);
+
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: `You are an expert agricultural plant pathologist. Always respond with ONLY valid JSON in this exact format:
+{
+  "disease": "Disease name",
+  "severity": "Low" or "Medium" or "High",
+  "action": "2-3 sentence immediate treatment recommendation with specific product names and quantities",
+  "explanation": "1 sentence explaining what this disease is"
+}
+No markdown, no extra text, just JSON.`,
+          messages: [{ role: 'user', content: userContent }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content.map(i => i.text || '').join('');
+      const clean = text.replace(/```json|```/g, '').trim();
+      const r = JSON.parse(clean);
+      // Upgrade the displayed result with AI response
+      renderDiseaseResult(r);
+      saveToHistory(r);
+    } catch (e) {
+      // Rule-based result already showing — silently ignore AI failure
+    }
+  }
+
+  // ── RULE-BASED DIAGNOSIS ENGINE (offline) ────────────────────────────────
+  const DISEASE_RULES = {
+    Tomato: {
+      'Brown / black spots':     { disease: 'Tomato Early Blight',        severity: 'Medium', explanation: 'Fungal disease caused by Alternaria solani — common in warm, wet conditions.', action: 'Apply Mancozeb 75% WP (2.5g/L water) or Chlorothalonil spray. Remove infected lower leaves immediately. Avoid overhead irrigation.' },
+      'White powder on leaves':  { disease: 'Tomato Powdery Mildew',      severity: 'Medium', explanation: 'Fungal infection thriving in dry conditions with high humidity.', action: 'Spray Sulfur 80% WP (2g/L) or Triadimefon 25% WP (1g/L). Apply in evening. Repeat every 10 days.' },
+      'Leaves turning yellow':   { disease: 'Tomato Yellow Leaf Curl',    severity: 'High',   explanation: 'Viral disease spread by whiteflies — spreads rapidly through the field.', action: 'No cure — remove infected plants immediately. Apply Imidacloprid (0.5ml/L) to control whitefly vectors. Cover nursery with insect net.' },
+      'Curling / deformed leaves':{ disease: 'Tomato Mosaic Virus',       severity: 'High',   explanation: 'Viral disease spread by aphids and contact. No chemical cure available.', action: 'Remove and destroy infected plants. Control aphids with Dimethoate 30% EC (1.5ml/L). Sanitize tools with 1% bleach.' },
+      'Wilting / drooping':      { disease: 'Tomato Fusarium Wilt',       severity: 'High',   explanation: 'Soil-borne fungal disease blocking water uptake through root system.', action: 'No effective chemical cure. Remove affected plants. Drench soil with Carbendazim (1g/L). Rotate crops next season.' },
+      'Holes in leaves':         { disease: 'Tomato Leaf Miner',          severity: 'Medium', explanation: 'Larval insect tunneling inside leaf tissue causing visible trails and holes.', action: 'Apply Spinosad (0.3ml/L) or Abamectin (0.5ml/L). Remove heavily infested leaves. Use yellow sticky traps.' },
+      'Mold / fuzzy growth':     { disease: 'Tomato Late Blight',         severity: 'High',   explanation: 'Phytophthora infestans — can destroy entire crop within days in humid conditions.', action: 'Apply Metalaxyl + Mancozeb (2g/L) IMMEDIATELY. Remove infected plants. Do not irrigate from above. Act within 24 hours.' },
+      'Rust coloured patches':   { disease: 'Tomato Septoria Leaf Spot',  severity: 'Medium', explanation: 'Fungal disease starting from lower leaves and moving upward.', action: 'Apply Chlorothalonil (2g/L) or Mancozeb (2.5g/L). Remove infected lower leaves. Mulch soil to reduce splash.' },
+    },
+    Potato: {
+      'Brown / black spots':     { disease: 'Potato Early Blight',        severity: 'Medium', explanation: 'Alternaria solani fungal disease — worsens in warm, humid weather.', action: 'Spray Mancozeb 75% WP (2.5g/L) or Iprodione (1.5g/L). Start treatment at first sign. Repeat every 7-10 days.' },
+      'Mold / fuzzy growth':     { disease: 'Potato Late Blight',         severity: 'High',   explanation: 'Phytophthora infestans — the same disease that caused the Irish famine. Spreads very fast.', action: 'Apply Metalaxyl-M + Mancozeb (2.5g/L) IMMEDIATELY. Remove infected haulms. This is a HIGH PRIORITY emergency treatment.' },
+      'Leaves turning yellow':   { disease: 'Potato Virus Y (PVY)',       severity: 'High',   explanation: 'Viral disease spread by aphids causing mosaic yellowing and yield loss.', action: 'No cure — remove infected plants. Apply Thiamethoxam (0.3g/L) to control aphid vectors. Use certified virus-free seed next season.' },
+      'Wilting / drooping':      { disease: 'Potato Bacterial Wilt',      severity: 'High',   explanation: 'Ralstonia solanacearum — soil-borne bacteria with no chemical cure.', action: 'Remove and burn infected plants. Do not plant potato in same field for 3-4 years. Improve drainage. Use resistant varieties.' },
+      'Curling / deformed leaves':{ disease: 'Potato Leaf Roll Virus',    severity: 'Medium', explanation: 'Aphid-transmitted virus causing upward rolling of leaves.', action: 'Control aphids with Imidacloprid (0.3ml/L). Remove badly infected plants. Use certified seed tubers next planting.' },
+    },
+    Wheat: {
+      'Rust coloured patches':   { disease: 'Wheat Stem Rust',            severity: 'High',   explanation: 'Puccinia graminis — one of the most destructive wheat diseases globally.', action: 'Apply Propiconazole 25% EC (1ml/L) or Tebuconazole (1ml/L) immediately. Two sprays 15 days apart. Contact local agriculture office.' },
+      'Brown / black spots':     { disease: 'Wheat Spot Blotch',          severity: 'Medium', explanation: 'Helminthosporium fungal disease — common in warm humid areas.', action: 'Spray Mancozeb (2.5g/L) or Propiconazole (1ml/L). Apply at boot stage. Avoid dense sowing.' },
+      'White powder on leaves':  { disease: 'Wheat Powdery Mildew',       severity: 'Medium', explanation: 'Blumeria graminis — common in cool, humid weather during tillering.', action: 'Apply Propiconazole (1ml/L) or Triadimefon (1g/L). Two sprays 10-14 days apart at tillering stage.' },
+      'Leaves turning yellow':   { disease: 'Wheat Yellow Rust',          severity: 'High',   explanation: 'Puccinia striiformis — spreads rapidly in cool weather (5-15°C).', action: 'Apply Propiconazole 25% EC (1ml/L) immediately. Spray 2-3 times at 15-day intervals. Report to your block agriculture officer.' },
+    },
+    Maize: {
+      'Brown / black spots':     { disease: 'Maize Turcicum Leaf Blight', severity: 'Medium', explanation: 'Exserohilum turcicum — cigar-shaped lesions on leaves reducing photosynthesis.', action: 'Apply Mancozeb (2.5g/L) or Zineb (2g/L). Spray at early tassel stage. Remove infected lower leaves.' },
+      'Rust coloured patches':   { disease: 'Maize Common Rust',          severity: 'Medium', explanation: 'Puccinia sorghi — orange pustules on both leaf surfaces.', action: 'Apply Propiconazole (1ml/L) or Azoxystrobin (1ml/L). Spray at 8-10 leaf stage before tasseling.' },
+      'Mold / fuzzy growth':     { disease: 'Maize Downy Mildew',         severity: 'High',   explanation: 'Peronosclerospora sorghi — destroys entire shoots. Very common in India.', action: 'Apply Metalaxyl (2g/L) as foliar spray. Seed treatment with Metalaxyl 35% DS (6g/kg seed) next season. Remove infected plants.' },
+      'Leaves turning yellow':   { disease: 'Maize Streak Virus',         severity: 'High',   explanation: 'Leafhopper-transmitted virus causing yellow streaks along leaf veins.', action: 'Control leafhoppers with Imidacloprid (0.3ml/L). No chemical cure for virus. Remove infected plants.' },
+    },
+    Rice: {
+      'Brown / black spots':     { disease: 'Rice Blast',                 severity: 'High',   explanation: 'Magnaporthe oryzae — most destructive rice disease. Diamond-shaped lesions on leaves.', action: 'Apply Tricyclazole 75% WP (0.6g/L) or Isoprothiolane (1.5ml/L). Spray at tillering and booting stage. Reduce nitrogen fertilizer.' },
+      'Leaves turning yellow':   { disease: 'Rice Yellow Stem Borer',     severity: 'High',   explanation: 'Scirpophaga incertulas larvae bore into stem causing dead heart or white ear.', action: 'Apply Chlorpyrifos (2ml/L) or Fipronil (1ml/L) at 25-30 DAT. Use light traps. Clip tips of seedlings before transplanting.' },
+      'Wilting / drooping':      { disease: 'Rice Bacterial Leaf Blight', severity: 'High',   explanation: 'Xanthomonas oryzae — water-soaked lesions turning yellow-white. Spreads in flooding.', action: 'Drain field immediately. Apply copper oxychloride (3g/L). Avoid excess nitrogen. Use resistant varieties next season.' },
+      'Rust coloured patches':   { disease: 'Rice Sheath Blight',         severity: 'Medium', explanation: 'Rhizoctonia solani — oval lesions on leaf sheath. Worsens in high nitrogen, dense crop.', action: 'Apply Hexaconazole (1ml/L) or Propiconazole (1ml/L). Reduce plant density next season. Avoid lodging.' },
+      'Mold / fuzzy growth':     { disease: 'Rice False Smut',            severity: 'Medium', explanation: 'Ustilaginoidea virens — green/yellow balls replace grains. Caused by cool weather at flowering.', action: 'Spray Propiconazole (1ml/L) at booting stage. Remove and burn infected panicles. Do not use infected grain as seed.' },
+    },
+  };
+
+  function buildRuleBasedDiagnosis(crop, symptoms, location) {
+    const cropRules = DISEASE_RULES[crop] || {};
+
+    // Find best matching rule
+    let best = null;
+    for (const symptom of symptoms) {
+      if (cropRules[symptom]) { best = cropRules[symptom]; break; }
+    }
+
+    // Generic fallback per crop if no rule matched
+    if (!best) {
+      const rootSymptoms = ['Roots / base', 'Wilting / drooping'];
+      const isRoot = location && rootSymptoms.some(s => location.includes(s) || symptoms.includes(s));
+      best = {
+        disease: isRoot ? `${crop} Root / Soil Disease` : `${crop} Fungal Infection`,
+        severity: symptoms.length >= 3 ? 'High' : 'Medium',
+        explanation: `Multiple symptoms detected on ${crop}. Likely fungal or bacterial in origin based on symptom pattern.`,
+        action: `Apply a broad-spectrum fungicide (Mancozeb 2.5g/L or Copper oxychloride 3g/L). Remove visibly infected plant parts. Improve air circulation. Consult your local Krishi Vigyan Kendra for lab confirmation.`
+      };
+    }
+
+    // Escalate severity if many symptoms or poor conditions
+    if (symptoms.length >= 4 && best.severity === 'Medium') best = { ...best, severity: 'High' };
+    if (sensorData.humidity > 85 && best.severity === 'Low') best = { ...best, severity: 'Medium' };
+
+    return best;
+  }
+
+  function buildDiseasePrompt(crop, symptoms, location) {
+    const sensorLine = sensorData.temp
+      ? `\n- Current conditions: Temperature ${sensorData.temp}°C, Humidity ${sensorData.humidity}%, Soil Moisture ${sensorData.soilMoisture}%`
+      : '';
+    return `A farmer reports the following crop problem:
+- Crop: ${crop}
+- Symptoms observed: ${symptoms}
+- Affected part: ${location}${sensorLine}
+${leafPhotoBase64 ? '- A leaf photo has been attached for visual analysis.' : ''}
+
+Please diagnose the most likely disease or pest issue. Factor in the current temperature and humidity conditions if provided.`;
+  }
+
+  function saveToHistory(result) {
+    const entry = {
+      id: Date.now(),
+      timestamp: new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }),
+      crop: selectedCrop,
+      symptoms: [...selectedSymptoms],
+      location: selectedLocation,
+      disease: result.disease,
+      severity: result.severity,
+      sensorSnap: { ...sensorData },
+      hasPhoto: !!leafPhotoBase64
+    };
+    scanHistory.unshift(entry);
+  }
+
+  function renderDiseaseResult(r) {
+    const sevClass = r.severity === 'High' ? 'severity-high' : r.severity === 'Medium' ? 'severity-medium' : 'severity-low';
+    const symptomsText = selectedSymptoms.join(' · ');
+
+    // UI label translations
+    const labels = {
+      EN: { detected: 'Disease Detected', severity: 'Severity', today: '⚡ DO THIS TODAY', disclaimer: 'This is an AI advisory tool. Confirm with your local agricultural officer or Krishi Vigyan Kendra before applying chemicals.', checkAgain: '↺ Check Another Problem', conditions: 'Conditions at scan time', humidity: 'humidity', soil: 'Soil', note: '📝 Disease name and treatment shown in English for accuracy.' },
+      KN: { detected: 'ರೋಗ ಪತ್ತೆಯಾಗಿದೆ', severity: 'ತೀವ್ರತೆ', today: '⚡ ಇಂದು ಮಾಡಬೇಕಾದದ್ದು', disclaimer: 'ಇದು AI ಸಲಹಾ ಸಾಧನ. ರಾಸಾಯನಿಕ ಅನ್ವಯಿಸುವ ಮೊದಲು ನಿಮ್ಮ ಸ್ಥಳೀಯ ಕೃಷಿ ಅಧಿಕಾರಿ ಅಥವಾ KVK ಅನ್ನು ಸಂಪರ್ಕಿಸಿ.', checkAgain: '↺ ಇನ್ನೊಂದು ಸಮಸ್ಯೆ ಪರೀಕ್ಷಿಸಿ', conditions: 'ಸ್ಕ್ಯಾನ್ ಸಮಯದ ಸ್ಥಿತಿಗಳು', humidity: 'ತೇವಾಂಶ', soil: 'ಮಣ್ಣು', note: '📝 ರೋಗದ ಹೆಸರು ಮತ್ತು ಚಿಕಿತ್ಸೆ ನಿಖರತೆಗಾಗಿ ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ ತೋರಿಸಲಾಗಿದೆ.' },
+      HI: { detected: 'रोग पहचाना गया', severity: 'गंभीरता', today: '⚡ आज यह करें', disclaimer: 'यह एक AI सलाह उपकरण है। रसायन लगाने से पहले अपने स्थानीय कृषि अधिकारी या KVK से पुष्टि करें।', checkAgain: '↺ दूसरी समस्या जांचें', conditions: 'स्कैन के समय की स्थितियां', humidity: 'नमी', soil: 'मिट्टी', note: '📝 सटीकता के लिए रोग का नाम और उपचार अंग्रेजी में दिखाया गया है।' },
+    };
+    const L = labels[currentLang] || labels.EN;
+    const sevLabel = { Low: { EN:'Low', KN:'ಕಡಿಮೆ', HI:'कम' }, Medium: { EN:'Medium', KN:'ಮಧ್ಯಮ', HI:'मध्यम' }, High: { EN:'High', KN:'ಹೆಚ್ಚು', HI:'अधिक' } };
+    const sev = (sevLabel[r.severity] || sevLabel.Medium)[currentLang] || r.severity;
+
+    document.getElementById('disease-result-wrap').innerHTML = `
+      <div class="result-card animate-in">
+        <div class="result-hero-strip">
+          <div class="disease-pill"><div class="pill-dot"></div>${L.detected}</div>
+          <div class="disease-name">${r.disease}</div>
+          <div class="disease-meta">${selectedCrop} · ${symptomsText} · ${selectedLocation}</div>
+        </div>
+        <div class="result-body">
+          <div class="severity-badge ${sevClass}">
+            <div class="severity-dot"></div>
+            ${sev} ${L.severity}
+          </div>
+          <button class="info-btn" style="display:block;width:100%;margin-bottom:14px">ℹ️ ${r.explanation}</button>
+          ${currentLang !== 'EN' ? `<div style="background:#FDF3D8;border:1px solid rgba(232,168,32,0.3);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:#8a6010">${L.note}</div>` : ''}
+          ${sensorData.temp ? `<div style="background:#E8F5E8;border:1px solid #A3D9A5;border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#166534;font-weight:600">🌡️ ${L.conditions}: ${sensorData.temp}°C · 💧 ${sensorData.humidity}% ${L.humidity} · 🌱 ${L.soil} ${sensorData.soilMoisture}%</div>` : ''}
+          <div class="action-box">
+            <div class="action-label">${L.today}</div>
+            <div class="action-text">${r.action}</div>
+          </div>
+          <div class="disclaimer">
+            <span>⚠️</span>
+            <span>${L.disclaimer}</span>
+          </div>
+          <button class="check-again-btn" onclick="resetDisease()">${L.checkAgain}</button>
+        </div>
+      </div>`;
+  }
+
+  function resetDisease() {
+    selectedCrop = ''; selectedSymptoms = []; selectedLocation = '';
+    leafPhotoBase64 = ''; leafPhotoMime = '';
+    document.querySelectorAll('.crop-card,.symptom-card,.location-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('step1-next').disabled = true;
+    document.getElementById('step2-next').disabled = true;
+    document.getElementById('step3-next').disabled = true;
+    const preview = document.getElementById('upload-preview');
+    if (preview) { preview.classList.remove('visible'); preview.src = ''; }
+    const badge = document.getElementById('upload-badge');
+    if (badge) badge.style.display = 'none';
+    document.getElementById('upload-icon').textContent = '📷';
+    const titleEl = document.getElementById('upload-title');
+    if (titleEl) {
+      titleEl.textContent = TRANSLATIONS[currentLang]['upload-title-default'] || 'Optional: Upload a leaf photo';
+      delete titleEl.dataset.hasPhoto;
+    }
+    document.getElementById('leaf-photo-input').value = '';
+    openPage('pest-page');
+  }
+
+  // ── FERTILIZER ──
+  function selectFertCrop(el, name) {
+    document.querySelectorAll('.fert-crop-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected'); fertSelectedCrop = name;
+    checkFertReady();
+  }
+
+  function checkFertReady() {
+    const n = document.getElementById('fert-n').value;
+    const p = document.getElementById('fert-p').value;
+    const k = document.getElementById('fert-k').value;
+    const ph = document.getElementById('fert-ph').value;
+    document.getElementById('fert-submit-btn').disabled = !(fertSelectedCrop && n !== '' && p !== '' && k !== '' && ph !== '');
+  }
+
+  async function getFertilizerAdvice() {
+    openPage('fertilizer-result-page');
+    const n = document.getElementById('fert-n').value;
+    const p = document.getElementById('fert-p').value;
+    const k = document.getElementById('fert-k').value;
+    const ph = document.getElementById('fert-ph').value;
+    const moisture = document.getElementById('fert-moisture').value || 'Not provided';
+    const stageLabel = currentStage ? currentStage.charAt(0).toUpperCase() + currentStage.slice(1) : 'Not specified';
+
+    document.getElementById('fert-result-wrap').innerHTML = `
+      <div class="ai-loading">
+        <div class="ai-spinner"></div>
+        <div class="ai-loading-text">Calculating prescription...</div>
+        <div class="ai-loading-sub">${fertSelectedCrop} · ${stageLabel} Stage · N:${n} P:${p} K:${k} · pH ${ph}</div>
+      </div>`;
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: `You are an expert agronomist. Always respond with ONLY valid JSON:
+{
+  "summary": "1 sentence overall assessment",
+  "stage_advice": "1 sentence specific to the crop growth stage",
+  "npk_ideal": { "n": number, "p": number, "k": number },
+  "shopping_list": [{ "product": "Name", "quantity": "X kg/acre", "estimated_cost": "₹XX-XX" }],
+  "application_tip": "2-3 sentence practical application advice",
+  "deficiency_warning": "1 sentence about most critical deficiency"
+}
+Use Indian market names and INR pricing. No markdown, just JSON.`,
+          messages: [{
+            role: 'user',
+            content: `Crop: ${fertSelectedCrop}
+Growth Stage: ${stageLabel}
+Soil N: ${n} kg/ha, P: ${p} kg/ha, K: ${k} kg/ha
+Soil pH: ${ph}, Soil Moisture: ${moisture}%
+${sensorData.temp ? `Current field conditions: ${sensorData.temp}°C, ${sensorData.humidity}% humidity` : ''}
+Provide fertilizer prescription adjusted for the ${stageLabel} growth stage.`
+          }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content.map(i => i.text || '').join('');
+      const clean = text.replace(/```json|```/g, '').trim();
+      const r = JSON.parse(clean);
+      renderFertResult(r, { n: parseFloat(n), p: parseFloat(p), k: parseFloat(k) });
+    } catch (e) {
+      document.getElementById('fert-result-wrap').innerHTML = `
+        <div style="padding:30px 20px;text-align:center;color:var(--muted)">
+          <div style="font-size:32px;margin-bottom:12px">⚠️</div>
+          <div style="font-weight:700;color:var(--forest);margin-bottom:8px">Could not get AI prescription</div>
+          <div style="font-size:13px">Please check your connection and try again.</div>
+          <button class="check-again-btn" style="margin-top:20px" onclick="openPage('fertilizer-page')">← Try Again</button>
+        </div>`;
+    }
+  }
+
+  function renderFertResult(r, current) {
+    const ideal = r.npk_ideal || { n: 120, p: 60, k: 80 };
+    const bars = [
+      { label: 'Nitrogen (N)', current: current.n, ideal: ideal.n, color: '#3b82f6' },
+      { label: 'Phosphorus (P)', current: current.p, ideal: ideal.p, color: '#f97316' },
+      { label: 'Potassium (K)', current: current.k, ideal: ideal.k, color: '#8b5cf6' },
+    ];
+    const barsHtml = bars.map(b => {
+      const pct = Math.min(100, (b.current / Math.max(b.ideal, b.current, 1)) * 100).toFixed(0);
+      const idealPct = Math.min(100, (b.ideal / Math.max(b.ideal, b.current, 1)) * 100).toFixed(0);
+      return `<div class="npk-bar-row">
+        <div class="npk-bar-header">
+          <span class="npk-bar-name" style="color:${b.color}">${b.label}</span>
+          <span class="npk-bar-vals">Current: ${b.current} / Ideal: ${b.ideal} kg/ha</span>
+        </div>
+        <div class="npk-bar-track">
+          <div class="npk-bar-current" style="width:${pct}%;background:${b.color}"></div>
+          <div class="npk-bar-ideal-marker" style="left:${idealPct}%"></div>
+        </div>
+      </div>`;
+    }).join('');
+
+    const shopHtml = (r.shopping_list || []).map(s => `
+      <div class="shop-item">
+        <div class="shop-item-left">
+          <div class="shop-item-name">${s.product}</div>
+          <div class="shop-item-qty">${s.quantity}</div>
+        </div>
+        <div class="shop-item-cost">${s.estimated_cost}</div>
+      </div>`).join('');
+
+    document.getElementById('fert-result-wrap').innerHTML = `
+      <div class="fert-result-card">
+        <div class="fert-result-strip">
+          <div class="fert-pill"><div class="fert-pill-dot"></div>Prescription Ready</div>
+          <div class="fert-title">${fertSelectedCrop} Fertilizer Plan</div>
+          <div class="fert-sub">${r.summary}</div>
+        </div>
+        <div class="fert-body">
+          ${r.stage_advice ? `<div style="background:#E8F0E8;border:1.5px solid rgba(45,90,45,0.25);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:13px;line-height:1.6;color:var(--forest)">📌 <b>Stage Note:</b> ${r.stage_advice}</div>` : ''}
+          <div style="font-size:11px;font-weight:700;color:var(--forest-md);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">📊 NPK Status — Current vs Ideal</div>
+          <div class="npk-bars">${barsHtml}</div>
+          <div style="font-size:11px;font-weight:700;color:var(--forest-md);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">🛒 Shopping List</div>
+          <div class="shopping-list">${shopHtml}</div>
+          <div class="fert-tip-box">
+            <div class="fert-tip-label">🌿 Application Guide</div>
+            <div class="fert-tip-text">${r.application_tip}</div>
+          </div>
+          <div class="disclaimer">
+            <span>⚠️</span>
+            <span>${r.deficiency_warning} Always confirm with your local KVK before applying.</span>
+          </div>
+          <button class="check-again-btn" onclick="openPage('fertilizer-page')">↺ New Prescription</button>
+        </div>
+      </div>`;
+  }
+
+  // ─────────────────────────────────────────────
+  // WEATHER ADVISOR
+  // ─────────────────────────────────────────────
+  let weatherLoaded = false;
+
+  async function loadWeather() {
+    if (weatherLoaded) return;
+    const container = document.getElementById('weather-container');
+    container.innerHTML = `<div class="ai-loading" style="margin-top:40px">
+      <div class="ai-spinner"></div>
+      <div class="ai-loading-text">Fetching weather data...</div>
+      <div class="ai-loading-sub">Getting your location</div>
+    </div>`;
+
+    try {
+      const pos = await new Promise((res, rej) =>
+        navigator.geolocation.getCurrentPosition(res, rej, { timeout: 8000 })
+      );
+      const { latitude: lat, longitude: lon } = pos.coords;
+      await fetchWeatherAndAdvice(lat, lon, container);
+      weatherLoaded = true;
+    } catch (e) {
+      // Fallback to Bengaluru coordinates if geolocation denied
+      await fetchWeatherAndAdvice(13.1007, 77.5963, container, 'Yelahanka, Bengaluru (default)');
+      weatherLoaded = true;
+    }
+  }
+
+  async function fetchWeatherAndAdvice(lat, lon, container, locationOverride) {
+    try {
+      // Open-Meteo: free, no key required, no CORS issues
+      const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,precipitation,weather_code,cloud_cover&daily=precipitation_sum,wind_speed_10m_max&timezone=auto&forecast_days=1`;
+      const wRes = await fetch(weatherUrl);
+      const wData = await wRes.json();
+      const c = wData.current;
+
+      const tz = wData.timezone || '';
+      const cityName = locationOverride || tz.replace('Asia/', '').replace('_', ' ') || `${lat.toFixed(2)}°N, ${lon.toFixed(2)}°E`;
+
+      const weatherCode = c.weather_code;
+      const condition = decodeWeatherCode(weatherCode);
+      const temp = c.temperature_2m;
+      const humidity = c.relative_humidity_2m;
+      const windSpeed = c.wind_speed_10m;
+      const precipitation = c.precipitation;
+      const cloudCover = c.cloud_cover;
+
+      // Always generate rule-based advice first so weather renders immediately
+      const advice = buildRuleBasedAdvice(temp, humidity, windSpeed, precipitation, cloudCover);
+
+      // Render weather immediately with rule-based advice
+      renderWeather(container, { cityName, temp, humidity, windSpeed, precipitation, cloudCover, condition }, advice);
+      weatherLoaded = true;
+
+      // Then try to upgrade advice with AI in background (won't crash if it fails)
+      getWeatherAIAdvice(temp, humidity, windSpeed, precipitation, cloudCover, condition).then(aiAdvice => {
+        if (aiAdvice) renderWeather(container, { cityName, temp, humidity, windSpeed, precipitation, cloudCover, condition }, aiAdvice);
+      }).catch(() => {});
+
+    } catch (e) {
+      container.innerHTML = `
+        <div style="padding:30px 20px;text-align:center">
+          <div style="font-size:40px;margin-bottom:12px">🌧️</div>
+          <div style="font-family:'Merriweather',serif;font-size:18px;font-weight:900;color:var(--forest);margin-bottom:8px">Weather Unavailable</div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Could not connect to weather service. Please check your internet connection and try again.</div>
+          <button class="weather-refresh-btn" onclick="weatherLoaded=false;loadWeather()">⟳ Try Again</button>
+        </div>`;
+    }
+  }
+
+  // Rule-based advice — works 100% offline, no API needed
+  function buildRuleBasedAdvice(temp, humidity, wind, rain, cloud) {
+    return {
+      spray_advice: rain > 5 ? 'Avoid spraying — rain will wash off chemicals.' : wind > 20 ? 'Avoid spraying — wind above 20 km/h causes drift.' : humidity > 85 ? 'Spray early morning — high humidity may reduce efficacy.' : 'Good conditions for spraying pesticides or fungicides.',
+      fertilizer_advice: rain > 10 ? 'Delay fertilizer — heavy rain will cause runoff and waste.' : rain > 3 ? 'Light rain expected — wait for soil to absorb before applying.' : humidity < 30 ? 'Apply with irrigation — dry conditions reduce uptake.' : 'Good day to apply fertilizer. Mix into top soil layer.',
+      irrigation_advice: rain > 15 ? 'Skip irrigation — rainfall is sufficient today.' : rain > 5 ? 'Reduce irrigation — light rain provides partial moisture.' : temp > 35 ? 'Irrigate in evening to reduce evaporation loss.' : 'Normal irrigation schedule. Check soil moisture before applying.',
+      disease_risk: humidity > 85 ? 'High' : humidity > 65 ? 'Medium' : 'Low',
+      disease_risk_reason: humidity > 85 ? 'High humidity — risk of fungal diseases like Late Blight and Powdery Mildew. Inspect leaves daily.' : humidity > 65 ? 'Moderate humidity — monitor for early signs of fungal infection.' : 'Low disease risk. Continue regular crop monitoring.',
+    };
+  }
+
+  function decodeWeatherCode(code) {
+    if (code === 0) return 'Clear Sky ☀️';
+    if (code <= 3) return 'Partly Cloudy ⛅';
+    if (code <= 49) return 'Foggy 🌫️';
+    if (code <= 67) return 'Rainy 🌧️';
+    if (code <= 77) return 'Snowy 🌨️';
+    if (code <= 82) return 'Rain Showers 🌦️';
+    if (code <= 99) return 'Thunderstorm ⛈️';
+    return 'Unknown';
+  }
+
+  async function getWeatherAIAdvice(temp, humidity, wind, rain, cloud, condition) {
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 600,
+          system: `You are an expert agricultural advisor. Respond ONLY with valid JSON:
+{
+  "spray_advice": "1 sentence: is it a good day to spray pesticides/fungicides? Why?",
+  "fertilizer_advice": "1 sentence: is it a good day to apply fertilizer? Why?",
+  "irrigation_advice": "1 sentence: irrigation recommendation based on conditions",
+  "disease_risk": "Low" or "Medium" or "High",
+  "disease_risk_reason": "1 sentence explaining which disease is most likely given these conditions"
+}
+No markdown, just JSON.`,
+          messages: [{
+            role: 'user',
+            content: `Current farm weather: Temp ${temp}°C, Humidity ${humidity}%, Wind ${wind} km/h, Rain ${rain}mm, Cloud cover ${cloud}%, Condition: ${condition}. Give farming recommendations.`
+          }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content.map(i => i.text || '').join('');
+      return JSON.parse(text.replace(/```json|```/g, '').trim());
+    } catch (e) {
+      return {
+        spray_advice: humidity > 80 ? 'Avoid spraying — high humidity reduces efficacy and may spread disease.' : 'Conditions are acceptable for spraying.',
+        fertilizer_advice: rain > 5 ? 'Avoid fertilizer application — rain will wash it away.' : 'Conditions are suitable for fertilizer application.',
+        irrigation_advice: rain > 10 ? 'Skip irrigation today — rainfall is sufficient.' : 'Light irrigation recommended if soil moisture is below 40%.',
+        disease_risk: humidity > 85 ? 'High' : humidity > 65 ? 'Medium' : 'Low',
+        disease_risk_reason: humidity > 85 ? 'High humidity creates ideal conditions for fungal diseases like Late Blight and Powdery Mildew.' : 'Conditions are moderate — monitor plants regularly.'
+      };
+    }
+  }
+
+  function renderWeather(container, w, advice) {
+    const riskClass = advice.disease_risk === 'High' ? 'severity-high' : advice.disease_risk === 'Medium' ? 'severity-medium' : 'severity-low';
+    container.innerHTML = `
+      <div class="weather-hero">
+        <div class="weather-location">📍 ${w.cityName}</div>
+        <div class="weather-temp">${Math.round(w.temp)}°</div>
+        <div class="weather-condition">${w.condition}</div>
+        <div class="weather-pills">
+          <div class="weather-pill">💧 ${w.humidity}% humidity</div>
+          <div class="weather-pill">💨 ${w.windSpeed} km/h</div>
+          <div class="weather-pill">🌧️ ${w.precipitation}mm rain</div>
+        </div>
+      </div>
+      <div class="weather-grid">
+        <div class="weather-stat-box">
+          <div class="wsb-icon">☁️</div>
+          <div class="wsb-val">${w.cloudCover}%</div>
+          <div class="wsb-label">Cloud Cover</div>
+        </div>
+        <div class="weather-stat-box">
+          <div class="wsb-icon">🦠</div>
+          <div class="wsb-val"><span class="severity-badge ${riskClass}" style="margin:0;padding:3px 8px;font-size:10px">${advice.disease_risk}</span></div>
+          <div class="wsb-label">Disease Risk</div>
+        </div>
+        <div class="weather-stat-box">
+          <div class="wsb-icon">🌡️</div>
+          <div class="wsb-val">${Math.round(w.temp)}°C</div>
+          <div class="wsb-label">Temperature</div>
+        </div>
+        <div class="weather-stat-box">
+          <div class="wsb-icon">💧</div>
+          <div class="wsb-val">${w.humidity}%</div>
+          <div class="wsb-label">Humidity</div>
+        </div>
+      </div>
+      <div class="ai-advice-box">
+        <div class="aab-header">
+          <span style="font-size:16px">🤖</span>
+          <span class="aab-header-text">AI Farm Advisory</span>
+        </div>
+        <div class="aab-body">
+          <div class="advice-row">
+            <div class="advice-icon">🧪</div>
+            <div class="advice-text"><strong>Spraying:</strong> ${advice.spray_advice}</div>
+          </div>
+          <div class="advice-row">
+            <div class="advice-icon">🌱</div>
+            <div class="advice-text"><strong>Fertilizer:</strong> ${advice.fertilizer_advice}</div>
+          </div>
+          <div class="advice-row">
+            <div class="advice-icon">💧</div>
+            <div class="advice-text"><strong>Irrigation:</strong> ${advice.irrigation_advice}</div>
+          </div>
+          <div class="advice-row">
+            <div class="advice-icon">🦠</div>
+            <div class="advice-text"><strong>Disease Risk:</strong> ${advice.disease_risk_reason}</div>
+          </div>
+        </div>
+      </div>
+      <button class="weather-refresh-btn" onclick="weatherLoaded=false;loadWeather()">⟳ Refresh Weather</button>
+    `;
+  }
+
+  // ─────────────────────────────────────────────
+  // SCAN HISTORY
+  // ─────────────────────────────────────────────
+  function renderHistory() {
+    const container = document.getElementById('history-container');
+    if (scanHistory.length === 0) {
+      container.innerHTML = `
+        <div class="history-empty">
+          <div class="history-empty-icon">📋</div>
+          <div class="history-empty-title">No scans yet</div>
+          <div class="history-empty-sub">Your disease diagnoses will appear here with timestamps and sensor readings from the moment of each scan.</div>
+          <button class="history-start-btn" onclick="openPage('pest-page')">🔍 Start First Scan</button>
+        </div>`;
+      return;
+    }
+
+    const sevClass = s => s === 'High' ? 'severity-high' : s === 'Medium' ? 'severity-medium' : 'severity-low';
+    const entriesHtml = scanHistory.map((e, i) => `
+      <div class="history-entry" style="animation-delay:${i * 0.06}s">
+        <div class="history-entry-header">
+          <div class="history-crop">
+            <span>${getCropEmoji(e.crop)}</span> ${e.crop}
+            ${e.hasPhoto ? '<span style="font-size:10px;background:rgba(255,255,255,0.2);padding:2px 7px;border-radius:100px;">📷 Photo</span>' : ''}
+          </div>
+          <div class="history-time">${e.timestamp}</div>
+        </div>
+        <div class="history-entry-body">
+          <div class="history-disease">${e.disease}</div>
+          <div class="history-symptoms">Symptoms: ${e.symptoms.join(' · ')} · ${e.location}</div>
+          <div style="margin-bottom:10px">
+            <span class="severity-badge ${sevClass(e.severity)}" style="font-size:10px;padding:3px 10px;margin:0">
+              <div class="severity-dot"></div>${e.severity} Severity
+            </span>
+          </div>
+          ${e.sensorSnap.temp ? `<div class="history-sensors">
+            <span class="history-sensor-tag">🌡️ ${e.sensorSnap.temp}°C</span>
+            <span class="history-sensor-tag">💧 ${e.sensorSnap.humidity}% RH</span>
+            <span class="history-sensor-tag">🌱 ${e.sensorSnap.soilMoisture}% soil</span>
+          </div>` : ''}
+        </div>
+      </div>`).join('');
+
+    container.innerHTML = `
+      <div class="history-header-row">
+        <div class="history-count">${scanHistory.length} scan${scanHistory.length > 1 ? 's' : ''} this session</div>
+        <button class="history-clear-btn" onclick="clearHistory()">🗑 Clear All</button>
+      </div>
+      ${entriesHtml}`;
+  }
+
+  function clearHistory() {
+    if (confirm('Clear all scan history?')) {
+      scanHistory = [];
+      renderHistory();
+    }
+  }
+
+  function getCropEmoji(crop) {
+    const map = { Tomato:'🍅', Potato:'🥔', Wheat:'🌾', Maize:'🌽', Rice:'🍚', Onion:'🧅',
+      Brinjal:'🍆', Pepper:'🌶️', Grapes:'🍇', Peach:'🍑', Apple:'🍎', Soybean:'🫘' };
+    return map[crop] || '🌿';
+  }
+
+  // ─────────────────────────────────────────────
+  // NEARBY SHOPS
+  // ─────────────────────────────────────────────
+  function findShopsNearMe() {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser.');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude: lat, longitude: lon } = pos.coords;
+        const url = `https://www.google.com/maps/search/agricultural+supply+shop+fertilizer+seeds/@${lat},${lon},14z`;
+        window.open(url, '_blank');
+      },
+      () => {
+        alert('Location access denied. Please enter your location manually below.');
+      },
+      { timeout: 8000 }
+    );
+  }
+
+  function searchShopsManual() {
+    const loc = document.getElementById('shops-location-input').value.trim();
+    if (!loc) { alert('Please enter a location first.'); return; }
+    const q = encodeURIComponent('agricultural supply shop fertilizer seeds near ' + loc);
+    window.open(`https://www.google.com/maps/search/${q}`, '_blank');
+  }
+
+  function searchCategory(category) {
+    // Try geolocation first, fall back to default Bengaluru
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude: lat, longitude: lon } = pos.coords;
+        const q = encodeURIComponent(category);
+        window.open(`https://www.google.com/maps/search/${q}/@${lat},${lon},13z`, '_blank');
+      },
+      () => {
+        const q = encodeURIComponent(category + ' near me');
+        window.open(`https://www.google.com/maps/search/${q}`, '_blank');
+      },
+      { timeout: 5000 }
+    );
+  }
+
+  // ── LANG SWITCHER WITH FULL TRANSLATIONS ──
+  const TRANSLATIONS = {
+    EN: {
+      // Nav
+      'nav-brand': 'AgriAdvisor AI',
+      // Hero
+      'hero-eyebrow': 'AI-Powered Agriculture',
+      'hero-headline-1': 'Smarter farming',
+      'hero-headline-2': 'starts with ',
+      'hero-headline-gold': 'better data',
+      'hero-sub': 'Upload a crop leaf photo to instantly detect pests and diseases, or enter your soil readings to get a precise fertilizer prescription — built for real farmers, not just demos.',
+      'stat-label-1': 'Disease\nClasses',
+      'stat-label-2': 'Crops\nSupported',
+      'stat-label-3': 'Powered\nby CNN',
+      'banner-label': 'Get started now',
+      'banner-title-1': 'Diagnose your crop',
+      'banner-title-2': 'in ',
+      'banner-title-gold': '3 quick taps',
+      'banner-cta': '🔍 Start Diagnosis →',
+      'section-choose': 'Choose a feature',
+      // Feature cards
+      'card1-title': 'Pest & Disease Detection',
+      'card1-desc': 'Tap your crop, choose a symptom, pick where on the plant — get an instant diagnosis and treatment plan in 3 taps. Optional leaf photo for extra accuracy.',
+      'card1-link': 'Open feature',
+      'card2-title': 'Fertilizer Advisor',
+      'card2-desc': 'Enter your soil sensor readings — NPK levels, pH, and moisture — to get a precise fertilizer prescription with a clear shopping list and application guide.',
+      'card2-link': 'Open feature',
+      'card3-title': 'Weather Advisor',
+      'card3-desc': 'Get live weather at your farm location and an AI recommendation on whether today is a good day to spray or apply fertilizer.',
+      'card3-link': 'Open feature',
+      'card4-title': 'Scan History',
+      'card4-desc': 'Every leaf you analyse gets saved with the sensor readings at that moment — so you can spot patterns like "high humidity → Late Blight" over time.',
+      'card4-link': 'Open feature',
+      'card5-title': 'Nearby Agri Shops',
+      'card5-desc': 'Uses your GPS location to find agricultural supply shops near you. Find fertilizers, seeds, and pesticides locally with one tap.',
+      'card5-link': 'Open feature',
+      // Pest steps
+      'back-home': '← Back to Home',
+      'step-crop': 'Crop',
+      'step-symptom': 'Symptom',
+      'step-location': 'Location',
+      'step-result': 'Result',
+      'page-title-crop': 'Which crop is affected?',
+      'page-sub-crop': 'Tap your crop to continue',
+      'upload-title-default': 'Optional: Upload a leaf photo',
+      'upload-sub': 'AI will analyse it for a more accurate result',
+      'btn-next-symptom': 'Next — Pick Symptom →',
+      'page-title-symptom': 'What do you see?',
+      'page-sub-symptom': 'Tap all symptoms that match',
+      'multi-hint': '✦ You can select multiple symptoms',
+      'symptom-1': 'Leaves turning yellow',
+      'symptom-2': 'Brown / black spots',
+      'symptom-3': 'Wilting / drooping',
+      'symptom-4': 'White powder on leaves',
+      'symptom-5': 'Holes in leaves',
+      'symptom-6': 'Mold / fuzzy growth',
+      'symptom-7': 'Curling / deformed leaves',
+      'symptom-8': 'Sticky / slimy residue',
+      'symptom-9': 'Rust coloured patches',
+      'symptom-10': 'Insects / bugs visible',
+      'btn-next-location': 'Next — Pick Location →',
+      'page-title-location': 'Where on the plant?',
+      'page-sub-location': 'Where are the symptoms most visible?',
+      'loc-1': 'Leaves',
+      'loc-2': 'Stem / stalk',
+      'loc-3': 'Fruit / pods',
+      'loc-4': 'Roots / base',
+      'loc-5': 'Flowers / buds',
+      'loc-6': 'Whole plant',
+      'btn-diagnose': '🔍 Get AI Diagnosis →',
+      // Fertilizer
+      'fert-title': '🌱 Fertilizer Advisor',
+      'fert-sub': 'Enter your soil sensor readings for a prescription',
+      'fert-select-crop': '🌾 Select Crop',
+      'fert-npk-label': '🧪 Soil NPK Readings (kg/ha)',
+      'npk-n-name': 'Nitrogen',
+      'npk-p-name': 'Phosphorus',
+      'npk-k-name': 'Potassium',
+      'ph-label': '⚗️ Soil pH',
+      'moisture-label': '💧 Moisture %',
+      'ph-placeholder': 'e.g. 6.5',
+      'moisture-placeholder': 'e.g. 40',
+      'btn-get-prescription': '🌱 Get Prescription →',
+      // Shops
+      'shops-label': 'Find local suppliers',
+      'shops-title': 'Nearby Agri Shops',
+      'shops-sub': 'GPS-powered search for seeds, fertilizers & pesticides',
+      'shops-search-title': '📍 Find shops near you',
+      'shops-gps-btn': '📡 Use My GPS Location',
+      'shops-or': '— or enter a location manually —',
+      'shops-input-placeholder': 'e.g. Yelahanka, Bengaluru',
+      'shops-go': 'Search',
+      'quick-searches': 'Quick Searches',
+      'tips-title': '💡 Shopping Tips',
+      // Sensor bar
+      'sensor-temp': 'Temp',
+      'sensor-hum': 'Humidity',
+      'sensor-soil': 'Soil',
+      'sensor-light': 'Light',
+      'sensor-refresh': '⟳ Refresh',
+      // History
+      'history-title': '📋 Scan History',
+      'history-sub': 'All diagnoses from this session',
+      'history-start-btn': '🔍 Start First Scan',
+    },
+    KN: {
+      'nav-brand': 'AgriAdvisor AI',
+      'hero-eyebrow': 'AI-ಚಾಲಿತ ಕೃಷಿ',
+      'hero-headline-1': 'ಜಾಣ್ಮೆಯ ಕೃಷಿ',
+      'hero-headline-2': 'ಉತ್ತಮ ದತ್ತಾಂಶದಿಂದ',
+      'hero-headline-gold': 'ಪ್ರಾರಂಭ',
+      'hero-sub': 'ಬೆಳೆ ಎಲೆಯ ಫೋಟೋ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ ಕೀಟ ಮತ್ತು ರೋಗಗಳನ್ನು ತಕ್ಷಣ ಪತ್ತೆ ಮಾಡಿ, ಅಥವಾ ನಿಮ್ಮ ಮಣ್ಣಿನ ಓದುವಿಕೆಗಳನ್ನು ನಮೂದಿಸಿ ನಿಖರ ರಸಗೊಬ್ಬರ ಪ್ರಿಸ್ಕ್ರಿಪ್ಷನ್ ಪಡೆಯಿರಿ.',
+      'stat-label-1': 'ರೋಗ\nವರ್ಗಗಳು',
+      'stat-label-2': 'ಬೆಳೆಗಳು\nಬೆಂಬಲಿತ',
+      'stat-label-3': 'CNN ಮೂಲಕ\nAI ಚಾಲಿತ',
+      'banner-label': 'ಈಗ ಪ್ರಾರಂಭಿಸಿ',
+      'banner-title-1': 'ನಿಮ್ಮ ಬೆಳೆ ರೋಗ ಪತ್ತೆ ಮಾಡಿ',
+      'banner-title-2': '',
+      'banner-title-gold': '3 ಕ್ಷಿಪ್ರ ಟ್ಯಾಪ್‌ಗಳಲ್ಲಿ',
+      'banner-cta': '🔍 ರೋಗ ಪತ್ತೆ ಶುರು →',
+      'section-choose': 'ವೈಶಿಷ್ಟ್ಯ ಆಯ್ಕೆ ಮಾಡಿ',
+      'card1-title': 'ಕೀಟ ಮತ್ತು ರೋಗ ಪತ್ತೆ',
+      'card1-desc': 'ನಿಮ್ಮ ಬೆಳೆ ಟ್ಯಾಪ್ ಮಾಡಿ, ಲಕ್ಷಣ ಆರಿಸಿ, ಸ್ಥಳ ಆರಿಸಿ — 3 ಟ್ಯಾಪ್‌ಗಳಲ್ಲಿ ತಕ್ಷಣ ರೋಗ ಪತ್ತೆ.',
+      'card1-link': 'ತೆರೆಯಿರಿ',
+      'card2-title': 'ರಸಗೊಬ್ಬರ ಸಲಹೆಗಾರ',
+      'card2-desc': 'ನಿಮ್ಮ ಮಣ್ಣಿನ NPK ಮಟ್ಟ, pH ಮತ್ತು ತೇವಾಂಶ ನಮೂದಿಸಿ ನಿಖರ ರಸಗೊಬ್ಬರ ಪ್ರಿಸ್ಕ್ರಿಪ್ಷನ್ ಪಡೆಯಿರಿ.',
+      'card2-link': 'ತೆರೆಯಿರಿ',
+      'card3-title': 'ಹವಾಮಾನ ಸಲಹೆಗಾರ',
+      'card3-desc': 'ನಿಮ್ಮ ಜಮೀನಿನಲ್ಲಿ ನೇರ ಹವಾಮಾನ ಮಾಹಿತಿ ಮತ್ತು ಇಂದು ಔಷಧ ಸಿಂಪಡಿಸಲು ಸೂಕ್ತ ದಿನವೇ ಎಂದು AI ಶಿಫಾರಸು.',
+      'card3-link': 'ತೆರೆಯಿರಿ',
+      'card4-title': 'ಸ್ಕ್ಯಾನ್ ಇತಿಹಾಸ',
+      'card4-desc': 'ನೀವು ವಿಶ್ಲೇಷಿಸಿದ ಪ್ರತಿ ಎಲೆ ಸೆನ್ಸರ್ ಓದುವಿಕೆಗಳೊಂದಿಗೆ ಉಳಿಸಲ್ಪಡುತ್ತದೆ.',
+      'card4-link': 'ತೆರೆಯಿರಿ',
+      'card5-title': 'ಸಮೀಪದ ಕೃಷಿ ಅಂಗಡಿಗಳು',
+      'card5-desc': 'GPS ಬಳಸಿ ಹತ್ತಿರದ ಕೃಷಿ ಸರಬರಾಜು ಅಂಗಡಿಗಳನ್ನು ಹುಡುಕಿ.',
+      'card5-link': 'ತೆರೆಯಿರಿ',
+      'back-home': '← ಮುಖಪುಟಕ್ಕೆ ಹಿಂದೆ',
+      'step-crop': 'ಬೆಳೆ',
+      'step-symptom': 'ಲಕ್ಷಣ',
+      'step-location': 'ಸ್ಥಳ',
+      'step-result': 'ಫಲಿತಾಂಶ',
+      'page-title-crop': 'ಯಾವ ಬೆಳೆ ಬಾಧಿಸಿದೆ?',
+      'page-sub-crop': 'ನಿಮ್ಮ ಬೆಳೆ ಟ್ಯಾಪ್ ಮಾಡಿ ಮುಂದುವರಿಯಿರಿ',
+      'upload-title-default': 'ಐಚ್ಛಿಕ: ಎಲೆ ಫೋಟೋ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ',
+      'upload-sub': 'ಹೆಚ್ಚು ನಿಖರ ಫಲಿತಾಂಶಕ್ಕಾಗಿ AI ವಿಶ್ಲೇಷಿಸುತ್ತದೆ',
+      'btn-next-symptom': 'ಮುಂದೆ — ಲಕ್ಷಣ ಆರಿಸಿ →',
+      'page-title-symptom': 'ನೀವು ಏನು ನೋಡುತ್ತೀರಿ?',
+      'page-sub-symptom': 'ಎಲ್ಲಾ ಹೊಂದಿಕೆಯಾಗುವ ಲಕ್ಷಣಗಳನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ',
+      'multi-hint': '✦ ಬಹು ಲಕ್ಷಣಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಬಹುದು',
+      'symptom-1': 'ಎಲೆಗಳು ಹಳದಿ ಆಗುತ್ತಿವೆ',
+      'symptom-2': 'ಕಂದು / ಕಪ್ಪು ಚುಕ್ಕೆಗಳು',
+      'symptom-3': 'ಬಾಡಿ ಬೀಳುವಿಕೆ',
+      'symptom-4': 'ಎಲೆಗಳ ಮೇಲೆ ಬಿಳಿ ಪುಡಿ',
+      'symptom-5': 'ಎಲೆಗಳಲ್ಲಿ ರಂಧ್ರಗಳು',
+      'symptom-6': 'ಶಿಲೀಂಧ್ರ ಬೆಳವಣಿಗೆ',
+      'symptom-7': 'ಸುರುಳಿ / ವಿರೂಪ ಎಲೆಗಳು',
+      'symptom-8': 'ಅಂಟಿಕೊಳ್ಳುವ ಅವಶೇಷ',
+      'symptom-9': 'ತುಕ್ಕು ಬಣ್ಣದ ತೇಪೆಗಳು',
+      'symptom-10': 'ಕೀಟಗಳು ಗೋಚರ',
+      'btn-next-location': 'ಮುಂದೆ — ಸ್ಥಳ ಆರಿಸಿ →',
+      'page-title-location': 'ಸಸ್ಯದ ಎಲ್ಲಿ?',
+      'page-sub-location': 'ಲಕ್ಷಣಗಳು ಅತ್ಯಂತ ಗೋಚರವಾಗಿರುವ ಸ್ಥಳ?',
+      'loc-1': 'ಎಲೆಗಳು',
+      'loc-2': 'ಕಾಂಡ',
+      'loc-3': 'ಹಣ್ಣು / ಕಾಯಿ',
+      'loc-4': 'ಬೇರು / ತಳ',
+      'loc-5': 'ಹೂವು / ಮೊಗ್ಗು',
+      'loc-6': 'ಇಡೀ ಸಸ್ಯ',
+      'btn-diagnose': '🔍 AI ರೋಗ ಪತ್ತೆ →',
+      'fert-title': '🌱 ರಸಗೊಬ್ಬರ ಸಲಹೆಗಾರ',
+      'fert-sub': 'ಪ್ರಿಸ್ಕ್ರಿಪ್ಷನ್‌ಗಾಗಿ ನಿಮ್ಮ ಮಣ್ಣಿನ ಓದುವಿಕೆ ನಮೂದಿಸಿ',
+      'fert-select-crop': '🌾 ಬೆಳೆ ಆಯ್ಕೆ ಮಾಡಿ',
+      'fert-npk-label': '🧪 ಮಣ್ಣಿನ NPK ಓದುವಿಕೆ (kg/ha)',
+      'npk-n-name': 'ಸಾರಜನಕ',
+      'npk-p-name': 'ರಂಜಕ',
+      'npk-k-name': 'ಪೊಟ್ಯಾಶಿಯಂ',
+      'ph-label': '⚗️ ಮಣ್ಣಿನ pH',
+      'moisture-label': '💧 ತೇವಾಂಶ %',
+      'ph-placeholder': 'ಉದಾ. 6.5',
+      'moisture-placeholder': 'ಉದಾ. 40',
+      'btn-get-prescription': '🌱 ಪ್ರಿಸ್ಕ್ರಿಪ್ಷನ್ ಪಡೆಯಿರಿ →',
+      'shops-label': 'ಸ್ಥಳೀಯ ಸರಬರಾಜುದಾರರನ್ನು ಹುಡುಕಿ',
+      'shops-title': 'ಸಮೀಪದ ಕೃಷಿ ಅಂಗಡಿಗಳು',
+      'shops-sub': 'ಬೀಜ, ರಸಗೊಬ್ಬರ ಮತ್ತು ಕೀಟನಾಶಕಗಳಿಗಾಗಿ GPS ಹುಡುಕಾಟ',
+      'shops-search-title': '📍 ನಿಮ್ಮ ಬಳಿ ಅಂಗಡಿಗಳನ್ನು ಹುಡುಕಿ',
+      'shops-gps-btn': '📡 ನನ್ನ GPS ಸ್ಥಳ ಬಳಸಿ',
+      'shops-or': '— ಅಥವಾ ಸ್ಥಳ ಹಸ್ತಚಾಲಿತವಾಗಿ ನಮೂದಿಸಿ —',
+      'shops-input-placeholder': 'ಉದಾ. ಯಲಹಂಕ, ಬೆಂಗಳೂರು',
+      'shops-go': 'ಹುಡುಕಿ',
+      'quick-searches': 'ತ್ವರಿತ ಹುಡುಕಾಟ',
+      'tips-title': '💡 ಶಾಪಿಂಗ್ ಸಲಹೆಗಳು',
+      'sensor-temp': 'ತಾಪ',
+      'sensor-hum': 'ತೇವಾಂಶ',
+      'sensor-soil': 'ಮಣ್ಣು',
+      'sensor-light': 'ಬೆಳಕು',
+      'sensor-refresh': '⟳ ರಿಫ್ರೆಶ್',
+      'history-title': '📋 ಸ್ಕ್ಯಾನ್ ಇತಿಹಾಸ',
+      'history-sub': 'ಈ ಅಧಿವೇಶನದ ಎಲ್ಲಾ ರೋಗ ಪತ್ತೆ',
+      'history-start-btn': '🔍 ಮೊದಲ ಸ್ಕ್ಯಾನ್ ಪ್ರಾರಂಭಿಸಿ',
+    },
+    HI: {
+      'nav-brand': 'AgriAdvisor AI',
+      'hero-eyebrow': 'AI-संचालित कृषि',
+      'hero-headline-1': 'स्मार्ट खेती',
+      'hero-headline-2': 'बेहतर डेटा से',
+      'hero-headline-gold': 'शुरू होती है',
+      'hero-sub': 'फसल की पत्ती की फोटो अपलोड करें और तुरंत कीट और रोगों का पता लगाएं, या अपनी मिट्टी की रीडिंग डालें और सटीक खाद की पर्ची पाएं।',
+      'stat-label-1': 'रोग\nश्रेणियां',
+      'stat-label-2': 'फसलें\nसमर्थित',
+      'stat-label-3': 'CNN से\nAI संचालित',
+      'banner-label': 'अभी शुरू करें',
+      'banner-title-1': 'अपनी फसल की जांच करें',
+      'banner-title-2': '',
+      'banner-title-gold': '3 त्वरित टैप में',
+      'banner-cta': '🔍 जांच शुरू करें →',
+      'section-choose': 'एक सुविधा चुनें',
+      'card1-title': 'कीट और रोग पहचान',
+      'card1-desc': 'फसल टैप करें, लक्षण चुनें, स्थान चुनें — 3 टैप में तुरंत रोग निदान पाएं।',
+      'card1-link': 'खोलें',
+      'card2-title': 'खाद सलाहकार',
+      'card2-desc': 'मिट्टी की NPK, pH और नमी डालें और सटीक खाद की पर्ची और खरीदारी सूची पाएं।',
+      'card2-link': 'खोलें',
+      'card3-title': 'मौसम सलाहकार',
+      'card3-desc': 'खेत पर लाइव मौसम और AI की सिफारिश पाएं कि आज छिड़काव के लिए सही दिन है या नहीं।',
+      'card3-link': 'खोलें',
+      'card4-title': 'स्कैन इतिहास',
+      'card4-desc': 'हर विश्लेषित पत्ती उस समय के सेंसर रीडिंग के साथ सहेजी जाती है।',
+      'card4-link': 'खोलें',
+      'card5-title': 'नज़दीकी कृषि दुकानें',
+      'card5-desc': 'GPS से आपके पास की कृषि आपूर्ति दुकानें खोजें।',
+      'card5-link': 'खोलें',
+      'back-home': '← मुखपृष्ठ पर वापस',
+      'step-crop': 'फसल',
+      'step-symptom': 'लक्षण',
+      'step-location': 'स्थान',
+      'step-result': 'परिणाम',
+      'page-title-crop': 'कौन सी फसल प्रभावित है?',
+      'page-sub-crop': 'जारी रखने के लिए फसल टैप करें',
+      'upload-title-default': 'वैकल्पिक: पत्ती की फोटो अपलोड करें',
+      'upload-sub': 'AI अधिक सटीक परिणाम के लिए विश्लेषण करेगा',
+      'btn-next-symptom': 'आगे — लक्षण चुनें →',
+      'page-title-symptom': 'आप क्या देख रहे हैं?',
+      'page-sub-symptom': 'सभी मेल खाने वाले लक्षण टैप करें',
+      'multi-hint': '✦ आप कई लक्षण चुन सकते हैं',
+      'symptom-1': 'पत्तियां पीली पड़ रही हैं',
+      'symptom-2': 'भूरे / काले धब्बे',
+      'symptom-3': 'मुरझाना / झुकना',
+      'symptom-4': 'पत्तियों पर सफेद पाउडर',
+      'symptom-5': 'पत्तियों में छेद',
+      'symptom-6': 'फफूंद / रोएंदार वृद्धि',
+      'symptom-7': 'मुड़ी / विकृत पत्तियां',
+      'symptom-8': 'चिपचिपा अवशेष',
+      'symptom-9': 'जंग रंग के धब्बे',
+      'symptom-10': 'कीड़े / बग दिखाई दे रहे हैं',
+      'btn-next-location': 'आगे — स्थान चुनें →',
+      'page-title-location': 'पौधे पर कहाँ?',
+      'page-sub-location': 'लक्षण सबसे अधिक कहाँ दिख रहे हैं?',
+      'loc-1': 'पत्तियां',
+      'loc-2': 'तना',
+      'loc-3': 'फल / फली',
+      'loc-4': 'जड़ / आधार',
+      'loc-5': 'फूल / कली',
+      'loc-6': 'पूरा पौधा',
+      'btn-diagnose': '🔍 AI निदान पाएं →',
+      'fert-title': '🌱 खाद सलाहकार',
+      'fert-sub': 'पर्ची के लिए अपनी मिट्टी की रीडिंग डालें',
+      'fert-select-crop': '🌾 फसल चुनें',
+      'fert-npk-label': '🧪 मिट्टी NPK रीडिंग (kg/ha)',
+      'npk-n-name': 'नाइट्रोजन',
+      'npk-p-name': 'फास्फोरस',
+      'npk-k-name': 'पोटेशियम',
+      'ph-label': '⚗️ मिट्टी pH',
+      'moisture-label': '💧 नमी %',
+      'ph-placeholder': 'जैसे 6.5',
+      'moisture-placeholder': 'जैसे 40',
+      'btn-get-prescription': '🌱 पर्ची पाएं →',
+      'shops-label': 'स्थानीय आपूर्तिकर्ता खोजें',
+      'shops-title': 'नज़दीकी कृषि दुकानें',
+      'shops-sub': 'बीज, खाद और कीटनाशकों के लिए GPS खोज',
+      'shops-search-title': '📍 आपके पास दुकानें खोजें',
+      'shops-gps-btn': '📡 मेरी GPS स्थिति उपयोग करें',
+      'shops-or': '— या स्थान मैन्युअल रूप से दर्ज करें —',
+      'shops-input-placeholder': 'जैसे येलहंका, बेंगलुरु',
+      'shops-go': 'खोजें',
+      'quick-searches': 'त्वरित खोज',
+      'tips-title': '💡 खरीदारी टिप्स',
+      'sensor-temp': 'तापमान',
+      'sensor-hum': 'नमी',
+      'sensor-soil': 'मिट्टी',
+      'sensor-light': 'प्रकाश',
+      'sensor-refresh': '⟳ रिफ्रेश',
+      'history-title': '📋 स्कैन इतिहास',
+      'history-sub': 'इस सत्र के सभी निदान',
+      'history-start-btn': '🔍 पहला स्कैन शुरू करें',
+    }
+  };
+
+  let currentLang = 'EN';
+
+  function applyTranslations(lang) {
+    const t = TRANSLATIONS[lang];
+    if (!t) return;
+    currentLang = lang;
+
+    // Helper to set text content safely
+    const setText = (id, key) => {
+      const el = document.getElementById(id);
+      if (el && t[key] !== undefined) el.textContent = t[key];
+    };
+    const setAttr = (id, attr, key) => {
+      const el = document.getElementById(id);
+      if (el && t[key] !== undefined) el.setAttribute(attr, t[key]);
+    };
+
+    // Hero section
+    setText('t-hero-eyebrow', 'hero-eyebrow');
+    setText('t-hero-h1', 'hero-headline-1');
+    setText('t-hero-h2', 'hero-headline-2');
+    setText('t-hero-gold', 'hero-headline-gold');
+    setText('t-hero-sub', 'hero-sub');
+    setText('t-stat-label-1', 'stat-label-1');
+    setText('t-stat-label-2', 'stat-label-2');
+    setText('t-stat-label-3', 'stat-label-3');
+    setText('t-banner-label', 'banner-label');
+    setText('t-banner-title-1', 'banner-title-1');
+    setText('t-banner-title-2', 'banner-title-2');
+    setText('t-banner-title-gold', 'banner-title-gold');
+    setText('t-banner-cta', 'banner-cta');
+    setText('t-section-choose', 'section-choose');
+    // Feature cards
+    setText('t-card1-title', 'card1-title');
+    setText('t-card1-desc', 'card1-desc');
+    // Feature card links — update label text but preserve the .arr arrow span
+    ['card1-link','card2-link','card3-link','card4-link','card5-link'].forEach(key => {
+      const el = document.getElementById('t-' + key);
+      if (el && t[key] !== undefined) {
+        const arr = el.querySelector('.arr');
+        el.textContent = t[key] + ' ';
+        if (arr) el.appendChild(arr);
+      }
+    });
+    // Pest pages
+    document.querySelectorAll('.t-back-home').forEach(el => el.textContent = t['back-home']);
+    document.querySelectorAll('.t-step-crop').forEach(el => el.textContent = t['step-crop']);
+    document.querySelectorAll('.t-step-symptom').forEach(el => el.textContent = t['step-symptom']);
+    document.querySelectorAll('.t-step-location').forEach(el => el.textContent = t['step-location']);
+    document.querySelectorAll('.t-step-result').forEach(el => el.textContent = t['step-result']);
+    setText('t-page-title-crop', 'page-title-crop');
+    setText('t-page-sub-crop', 'page-sub-crop');
+    // Upload
+    const uploadTitleEl = document.getElementById('upload-title');
+    if (uploadTitleEl && !uploadTitleEl.dataset.hasPhoto) uploadTitleEl.textContent = t['upload-title-default'];
+    setText('t-upload-sub', 'upload-sub');
+    setText('t-btn-next-symptom', 'btn-next-symptom');
+    setText('t-page-title-symptom', 'page-title-symptom');
+    setText('t-page-sub-symptom', 'page-sub-symptom');
+    setText('t-multi-hint', 'multi-hint');
+    // Symptoms
+    for (let i = 1; i <= 10; i++) setText('t-symptom-' + i, 'symptom-' + i);
+    setText('t-btn-next-location', 'btn-next-location');
+    setText('t-page-title-location', 'page-title-location');
+    setText('t-page-sub-location', 'page-sub-location');
+    // Locations
+    for (let i = 1; i <= 6; i++) setText('t-loc-' + i, 'loc-' + i);
+    setText('t-btn-diagnose', 'btn-diagnose');
+    // Fertilizer
+    setText('t-fert-title', 'fert-title');
+    setText('t-fert-sub', 'fert-sub');
+    setText('t-fert-select-crop', 'fert-select-crop');
+    setText('t-fert-npk-label', 'fert-npk-label');
+    setText('t-npk-n-name', 'npk-n-name');
+    setText('t-npk-p-name', 'npk-p-name');
+    setText('t-npk-k-name', 'npk-k-name');
+    setText('t-ph-label', 'ph-label');
+    setText('t-moisture-label', 'moisture-label');
+    setAttr('fert-ph', 'placeholder', 'ph-placeholder');
+    setAttr('fert-moisture', 'placeholder', 'moisture-placeholder');
+    setText('t-btn-get-prescription', 'btn-get-prescription');
+    // Shops
+    setText('t-shops-label', 'shops-label');
+    setText('t-shops-title', 'shops-title');
+    setText('t-shops-sub', 'shops-sub');
+    setText('t-shops-search-title', 'shops-search-title');
+    setText('t-shops-gps-btn', 'shops-gps-btn');
+    setText('t-shops-or', 'shops-or');
+    setAttr('shops-location-input', 'placeholder', 'shops-input-placeholder');
+    setText('t-shops-go', 'shops-go');
+    setText('t-quick-searches', 'quick-searches');
+    setText('t-tips-title', 'tips-title');
+    // Sensor bar
+    setText('t-sensor-temp', 'sensor-temp');
+    setText('t-sensor-hum', 'sensor-hum');
+    setText('t-sensor-soil', 'sensor-soil');
+    setText('t-sensor-light', 'sensor-light');
+    setText('t-sensor-refresh', 'sensor-refresh');
+    // History
+    setText('t-history-title', 'history-title');
+    setText('t-history-sub', 'history-sub');
+  }
+
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const langMap = { 'EN': 'EN', 'ಕನ್ನಡ': 'KN', 'हिन्दी': 'HI' };
+      applyTranslations(langMap[btn.textContent] || 'EN');
+    });
+  });
+</script>
+</body>
+</html>
