@@ -1458,6 +1458,13 @@
       const titleEl = document.getElementById('upload-title');
       titleEl.textContent = file.name.substring(0, 28) + (file.name.length > 28 ? '…' : '') + ' — ready';
       titleEl.dataset.hasPhoto = '1';
+      const aiImage = new Image();
+
+aiImage.onload = () => {
+    predictLeafDisease(aiImage);
+};
+
+aiImage.src = dataUrl;
     };
     reader.readAsDataURL(file);
   });
@@ -2514,6 +2521,50 @@ No markdown, just JSON.`,
       applyTranslations(langMap[btn.textContent] || 'EN');
     });
   });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+
+<script>
+let model;
+let maxPredictions;
+
+const MODEL_URL = "https://teachablemachine.withgoogle.com/models/M-Eo8zhYO/";
+
+async function loadAIModel() {
+    const modelURL = MODEL_URL + "model.json";
+    const metadataURL = MODEL_URL + "metadata.json";
+
+    model = await tmImage.load(modelURL, metadataURL);
+    maxPredictions = model.getTotalClasses();
+
+    console.log("AI model loaded successfully");
+}
+
+loadAIModel();
+
+async function predictLeafDisease(imageElement) {
+
+    if (!model) {
+        alert("AI model still loading...");
+        return;
+    }
+
+    const prediction = await model.predict(imageElement);
+
+    prediction.sort((a, b) => b.probability - a.probability);
+
+    const topResult = prediction[0];
+
+    const diseaseName = topResult.className;
+    const confidence = (topResult.probability * 100).toFixed(1);
+
+    alert(
+        "🤖 AI Prediction\n\n" +
+        "Disease: " + diseaseName +
+        "\nConfidence: " + confidence + "%"
+    );
+}
 </script>
 </body>
 </html>
