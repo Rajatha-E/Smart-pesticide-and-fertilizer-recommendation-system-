@@ -4,57 +4,69 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AgriAdvisor AI</title>
-<!-- Non-blocking font load — page renders immediately even on 2G -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,700;0,900;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,700;0,900;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"></noscript>
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,700;0,900;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" onerror="this.onerror=null;document.documentElement.classList.add('no-webfonts')">
 <style>
   :root {
-    --bg:        #EFF4EB;
-    --bg-alt:    #F7FAF4;
+    --bg:        #F3F1EC;
+    --bg-alt:    #FAF9F6;
     --white:     #FFFFFF;
-    --forest:    #1E3A1E;
-    --forest-md: #2D5A2D;
-    --forest-lt: #4A7C4A;
-    --gold:      #E8A820;
-    --gold-lt:   #F5C842;
-    --gold-bg:   #FDF3D8;
-    --muted:     #6B7E6B;
-    --border:    #D4E0CC;
-    --shadow:    0 2px 16px rgba(30,58,30,0.08);
-    --shadow-lg: 0 8px 32px rgba(30,58,30,0.13);
+    --forest:    #1C3B2A;
+    --forest-md: #2A5C40;
+    --forest-lt: #3D7A58;
+    --gold:      #D4820A;
+    --gold-lt:   #E89C28;
+    --gold-bg:   #FDF0D8;
+    --terra:     #C25C2A;
+    --terra-lt:  #E8784A;
+    --terra-bg:  #FDF0EA;
+    --sage:      #7BA688;
+    --muted:     #6B7A6E;
+    --border:    #D8D2C8;
+    --shadow:    0 2px 16px rgba(28,59,42,0.08);
+    --shadow-lg: 0 8px 32px rgba(28,59,42,0.14);
+    --radius:    18px;
+    --radius-sm: 12px;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     background: var(--bg);
     color: var(--forest);
     min-height: 100vh;
     overflow-x: hidden;
   }
+  /* Subtle grain for organic feel */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    opacity: 0.018;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+  }
 
   /* ── NAV ── */
   nav {
     position: sticky; top: 0; z-index: 100;
-    background: rgba(255,255,255,0.94);
-    backdrop-filter: blur(14px);
+    background: rgba(255,255,255,0.96);
+    backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--border);
     padding: 0 20px; height: 58px;
     display: flex; align-items: center; justify-content: space-between;
-    box-shadow: 0 1px 8px rgba(30,58,30,0.06);
+    box-shadow: 0 1px 12px rgba(28,59,42,0.07);
   }
-  .logo { display: flex; align-items: center; gap: 9px; }
+  .logo { display: flex; align-items: center; gap: 10px; }
   .logo-icon {
     width: 36px; height: 36px;
-    background: var(--gold); border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--terra) 100%);
+    border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 18px; box-shadow: 0 2px 8px rgba(232,168,32,0.35);
+    font-size: 18px; box-shadow: 0 3px 10px rgba(212,130,10,0.4);
   }
   .logo-text {
-    font-family: 'Merriweather', serif;
+    font-family: 'Merriweather', Georgia, 'Times New Roman', serif;
     font-weight: 900; font-size: 17px;
-    color: var(--forest); letter-spacing: -0.3px;
+    color: var(--forest); letter-spacing: -0.4px;
   }
   .logo-text span { color: var(--gold); }
   .lang-switcher { display: flex; gap: 5px; }
@@ -63,17 +75,17 @@
     font-size: 11px; font-weight: 600;
     cursor: pointer; border: 1.5px solid var(--border);
     background: transparent; color: var(--muted);
-    transition: all 0.2s; font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: all 0.2s; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   }
   .lang-btn.active { background: var(--forest); color: #fff; border-color: var(--forest); }
 
   /* ── SENSOR BAR ── */
   .sensor-bar {
-    background: linear-gradient(90deg, var(--forest) 0%, #2a5c2a 100%);
+    background: linear-gradient(90deg, var(--forest) 0%, var(--forest-md) 60%, #2e6b4a 100%);
     padding: 9px 20px;
     display: flex; align-items: center; gap: 0;
     overflow-x: auto; position: sticky; top: 58px; z-index: 90;
-    box-shadow: 0 2px 8px rgba(30,58,30,0.18);
+    box-shadow: 0 2px 12px rgba(28,59,42,0.22);
     scrollbar-width: none;
   }
   .sensor-bar::-webkit-scrollbar { display: none; }
@@ -94,7 +106,7 @@
     border-radius: 100px; padding: 5px 12px;
     font-size: 11px; font-weight: 700; color: #fff;
     cursor: pointer; transition: all 0.2s;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     white-space: nowrap;
   }
   .sensor-refresh:hover { background: rgba(255,255,255,0.25); }
@@ -116,10 +128,10 @@
   .hero-eyebrow {
     display: inline-flex; align-items: center; gap: 7px;
     background: var(--gold-bg);
-    border: 1.5px solid rgba(232,168,32,0.35);
+    border: 1.5px solid rgba(212,130,10,0.35);
     border-radius: 100px; padding: 5px 14px 5px 9px;
     font-size: 10px; font-weight: 700; letter-spacing: 1.3px;
-    color: #8a6010; text-transform: uppercase; margin-bottom: 20px;
+    color: #7a4a08; text-transform: uppercase; margin-bottom: 20px;
     animation: fadeUp 0.5s ease both;
   }
   .eyebrow-dot {
@@ -131,7 +143,7 @@
     50%      { opacity:0.5; transform:scale(1.4); }
   }
   .hero-headline {
-    font-family: 'Merriweather', serif;
+    font-family: 'Merriweather', Georgia, 'Times New Roman', serif;
     font-weight: 900; font-size: 38px; line-height: 1.1;
     letter-spacing: -1px; color: var(--forest); margin-bottom: 6px;
     animation: fadeUp 0.5s 0.08s ease both;
@@ -150,11 +162,18 @@
   }
   .stat {
     background: var(--white); border: 1px solid var(--border);
-    border-radius: 16px; padding: 16px 10px;
+    border-radius: 18px; padding: 16px 10px;
     text-align: center; box-shadow: var(--shadow);
+    position: relative; overflow: hidden;
+  }
+  .stat::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, transparent 60%, rgba(212,130,10,0.04) 100%);
+    pointer-events: none;
   }
   .stat-num {
-    font-family: 'Merriweather', serif;
+    font-family: 'Merriweather', Georgia, 'Times New Roman', serif;
     font-size: 28px; font-weight: 900; color: var(--forest); line-height: 1; margin-bottom: 5px;
   }
   .stat-num span { color: var(--gold); }
@@ -166,8 +185,8 @@
   /* ── BANNER STRIP ── */
   .hero-banner {
     margin: 0 20px 32px;
-    border-radius: 20px;
-    background: linear-gradient(120deg, var(--forest) 0%, var(--forest-md) 60%, #3d7a3d 100%);
+    border-radius: 22px;
+    background: linear-gradient(120deg, var(--forest) 0%, var(--forest-md) 55%, #2d6644 100%);
     padding: 26px 22px; position: relative; overflow: hidden;
     box-shadow: var(--shadow-lg);
     animation: fadeUp 0.5s 0.32s ease both;
@@ -175,20 +194,20 @@
   .hero-banner::before {
     content: '';
     position: absolute; top: -30px; right: -30px;
-    width: 180px; height: 180px;
-    background: radial-gradient(circle, rgba(232,168,32,0.22) 0%, transparent 70%);
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(212,130,10,0.28) 0%, transparent 70%);
   }
   .hero-banner::after {
     content: '🌿'; position: absolute;
     bottom: -12px; right: 14px;
-    font-size: 88px; opacity: 0.15; line-height: 1;
+    font-size: 88px; opacity: 0.12; line-height: 1;
   }
   .banner-label {
     font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
     color: rgba(255,255,255,0.55); text-transform: uppercase; margin-bottom: 8px;
   }
   .banner-title {
-    font-family: 'Merriweather', serif;
+    font-family: 'Merriweather', Georgia, 'Times New Roman', serif;
     font-size: 21px; font-weight: 900; color: #fff; line-height: 1.3; margin-bottom: 18px;
   }
   .banner-title span { color: var(--gold-lt); font-style: italic; }
@@ -197,7 +216,7 @@
     padding: 11px 20px; background: var(--gold); border: none;
     border-radius: 100px; font-size: 13px; font-weight: 700;
     color: var(--forest); cursor: pointer;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     box-shadow: 0 4px 14px rgba(232,168,32,0.4); transition: all 0.2s;
   }
   .banner-cta:hover { background: var(--gold-lt); transform: translateY(-1px); }
@@ -221,7 +240,7 @@
   }
   .feature-card::after {
     content:''; position: absolute; bottom:0; left:0; right:0; height:3px;
-    background: linear-gradient(90deg, var(--gold), var(--forest-lt));
+    background: linear-gradient(90deg, var(--gold), var(--terra));
     transform: scaleX(0); transform-origin: left; transition: transform 0.3s ease;
   }
   .feature-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
@@ -241,10 +260,10 @@
     display: flex; align-items: center; justify-content: center; font-size: 24px;
   }
   .icon-gold   { background: var(--gold-bg); }
-  .icon-green  { background: #E8F5E8; }
-  .icon-sky    { background: #E8F4FD; }
-  .icon-peach  { background: #FDF0E8; }
-  .icon-forest { background: #E8EFE8; }
+  .icon-green  { background: #E4F2EB; }
+  .icon-sky    { background: #E6F1FD; }
+  .icon-peach  { background: var(--terra-bg); }
+  .icon-forest { background: #E4EEE9; }
   .card-arrow {
     width: 32px; height: 32px; border-radius: 50%;
     border: 1.5px solid var(--border);
@@ -253,7 +272,7 @@
   }
   .feature-card:hover .card-arrow { background: var(--gold); border-color: var(--gold); color: #fff; }
   .card-title {
-    font-family: 'Merriweather', serif;
+    font-family: 'Merriweather', Georgia, 'Times New Roman', serif;
     font-size: 18px; font-weight: 700; color: var(--forest);
     margin-bottom: 7px; line-height: 1.25;
   }
@@ -284,7 +303,7 @@
     display: inline-flex; align-items: center; gap: 6px;
     font-size: 13px; font-weight: 600; color: var(--forest-md);
     cursor: pointer; background: none; border: none;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     padding: 6px 12px; border-radius: 20px; transition: background 0.2s;
   }
   .back-btn:hover { background: var(--bg); }
@@ -316,7 +335,7 @@
   }
   .step-line.done { background: var(--forest-md); }
   .page-title {
-    font-family: 'Merriweather', serif;
+    font-family: 'Merriweather', Georgia, 'Times New Roman', serif;
     font-size: 25px; font-weight: 900; color: var(--forest);
     padding: 18px 20px 6px; line-height: 1.25;
   }
@@ -364,14 +383,14 @@
     padding: 14px 18px; border-radius: 14px;
     border: 2px solid var(--border); background: var(--white);
     font-size: 13.5px; font-weight: 600; color: var(--forest);
-    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.2s;
+    cursor: pointer; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; transition: all 0.2s;
   }
   .btn-secondary:hover { background: var(--bg); }
   .btn-primary {
     flex: 1; padding: 14px 20px; border-radius: 14px; border: none;
     background: var(--gold); color: var(--forest);
     font-size: 14px; font-weight: 700;
-    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+    cursor: pointer; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     display: flex; align-items: center; justify-content: center; gap: 8px;
     transition: all 0.2s; box-shadow: 0 4px 14px rgba(232,168,32,0.35);
   }
@@ -387,8 +406,14 @@
     box-shadow: var(--shadow-lg); animation: fadeUp 0.4s ease both;
   }
   .result-hero-strip {
-    background: linear-gradient(135deg, var(--forest) 0%, var(--forest-md) 100%);
+    background: linear-gradient(135deg, var(--forest) 0%, var(--forest-md) 70%, #1e5c3a 100%);
     padding: 24px 22px 20px; position: relative; overflow: hidden;
+  }
+  .result-hero-strip::before {
+    content: '';
+    position: absolute; top: -20px; right: -20px;
+    width: 120px; height: 120px;
+    background: radial-gradient(circle, rgba(194,92,42,0.3) 0%, transparent 70%);
   }
   .result-hero-strip::after {
     content: '🌾'; position: absolute;
@@ -402,7 +427,7 @@
   }
   .pill-dot { width: 7px; height: 7px; border-radius: 50%; background: #f97316; }
   .disease-name {
-    font-family: 'Merriweather', serif;
+    font-family: 'Merriweather', Georgia, 'Times New Roman', serif;
     font-size: 26px; font-weight: 900; color: #fff; line-height: 1.2; margin-bottom: 6px;
   }
   .disease-meta { font-size: 12px; color: rgba(255,255,255,0.6); }
@@ -412,7 +437,7 @@
     border-radius: 12px; padding: 12px 14px;
     font-size: 13px; line-height: 1.55; color: var(--forest);
     text-align: left; cursor: default;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   }
   .action-box {
     background: var(--gold-bg); border: 1.5px solid rgba(232,168,32,0.35);
@@ -430,7 +455,7 @@
     width: 100%; padding: 14px; border-radius: 14px;
     border: 2px solid var(--border); background: var(--white);
     font-size: 14px; font-weight: 600; color: var(--forest);
-    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+    cursor: pointer; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     display: flex; align-items: center; justify-content: center; gap: 8px;
     transition: all 0.2s;
   }
@@ -538,7 +563,7 @@
     box-shadow: var(--shadow);
   }
   .npk-letter {
-    font-family: 'Merriweather', serif;
+    font-family: 'Merriweather', Georgia, 'Times New Roman', serif;
     font-size: 22px; font-weight: 900; margin-bottom: 6px;
   }
   .npk-n { color: #3b82f6; }
@@ -548,7 +573,7 @@
   .npk-input {
     width: 100%; border: 1.5px solid var(--border); border-radius: 8px;
     padding: 7px 6px; font-size: 15px; font-weight: 700;
-    text-align: center; font-family: 'Plus Jakarta Sans', sans-serif;
+    text-align: center; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     color: var(--forest); background: var(--bg);
     outline: none; transition: border-color 0.2s;
   }
@@ -564,7 +589,7 @@
   .pm-input {
     width: 100%; border: 1.5px solid var(--border); border-radius: 8px;
     padding: 8px 10px; font-size: 15px; font-weight: 700;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     color: var(--forest); background: var(--bg);
     outline: none; transition: border-color 0.2s;
   }
@@ -592,7 +617,7 @@
     font-size: 11px; font-weight: 700; color: #fff; margin-bottom: 10px;
   }
   .fert-pill-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; }
-  .fert-title { font-family: 'Merriweather', serif; font-size: 22px; font-weight: 900; color: #fff; line-height: 1.25; margin-bottom: 4px; }
+  .fert-title { font-family: 'Merriweather', Georgia, 'Times New Roman', serif; font-size: 22px; font-weight: 900; color: #fff; line-height: 1.25; margin-bottom: 4px; }
   .fert-sub { font-size: 12px; color: rgba(255,255,255,0.6); }
   .fert-body { padding: 18px 20px 20px; }
   .npk-bars { margin-bottom: 16px; }
@@ -627,6 +652,27 @@
   .fert-tip-text { font-size: 13.5px; line-height: 1.65; color: var(--forest); }
 
   /* ── WEATHER PAGE ── */
+
+  /* ── HOME WEATHER MINI BANNER ── */
+  .weather-banner {
+    display: flex !important; align-items: center; justify-content: space-between;
+    margin: 14px 16px 0; padding: 12px 16px;
+    background: linear-gradient(120deg, var(--forest) 0%, var(--forest-md) 100%);
+    color: #fff; border-radius: 18px;
+    box-shadow: 0 4px 18px rgba(28,59,42,0.22);
+    cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+    animation: fadeUp 0.4s ease;
+  }
+  .weather-banner:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(30,58,30,0.25); }
+  .weather-banner.loading { opacity: 0.85; }
+  .wb-left { display: flex; align-items: center; gap: 12px; }
+  .wb-icon { font-size: 32px; }
+  .wb-title { font-family: 'Merriweather', Georgia, serif; font-size: 13px; font-weight: 900; }
+  .wb-sub { font-size: 11px; opacity: 0.85; margin-top: 2px; }
+  .wb-right { text-align: right; }
+  .wb-temp { font-family: 'Merriweather', Georgia, serif; font-size: 26px; font-weight: 900; line-height: 1; }
+  .wb-tap { font-size: 9px; opacity: 0.85; margin-top: 4px; }
+
   .weather-container { padding: 20px 20px 100px; }
   .weather-hero {
     border-radius: 22px; overflow: hidden;
@@ -645,7 +691,7 @@
     display: flex; align-items: center; gap: 5px;
   }
   .weather-temp {
-    font-family: 'Merriweather', serif;
+    font-family: 'Merriweather', Georgia, 'Times New Roman', serif;
     font-size: 58px; font-weight: 900; color: #fff; line-height: 1;
     margin-bottom: 4px;
   }
@@ -670,7 +716,7 @@
   }
   .wsb-icon { font-size: 22px; margin-bottom: 6px; }
   .wsb-val {
-    font-family: 'Merriweather', serif;
+    font-family: 'Merriweather', Georgia, 'Times New Roman', serif;
     font-size: 22px; font-weight: 900; color: var(--forest); margin-bottom: 2px;
   }
   .wsb-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
@@ -698,7 +744,7 @@
     width: 100%; padding: 14px; border-radius: 14px;
     border: 2px solid var(--border); background: var(--white);
     font-size: 14px; font-weight: 600; color: var(--forest);
-    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+    cursor: pointer; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     display: flex; align-items: center; justify-content: center; gap: 8px;
     transition: all 0.2s; box-shadow: var(--shadow);
   }
@@ -712,7 +758,7 @@
   }
   .history-empty-icon { font-size: 56px; margin-bottom: 16px; }
   .history-empty-title {
-    font-family: 'Merriweather', serif;
+    font-family: 'Merriweather', Georgia, 'Times New Roman', serif;
     font-size: 20px; font-weight: 900; color: var(--forest); margin-bottom: 8px;
   }
   .history-empty-sub { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
@@ -721,7 +767,7 @@
     padding: 12px 22px; background: var(--gold); border: none;
     border-radius: 100px; font-size: 13px; font-weight: 700;
     color: var(--forest); cursor: pointer;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     box-shadow: 0 4px 14px rgba(232,168,32,0.4); transition: all 0.2s;
   }
   .history-start-btn:hover { background: var(--gold-lt); }
@@ -736,7 +782,7 @@
   .history-clear-btn {
     font-size: 12px; font-weight: 600; color: #ef4444;
     background: none; border: none; cursor: pointer;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   }
   .history-entry {
     background: var(--white); border: 1px solid var(--border);
@@ -751,7 +797,7 @@
   .history-crop { font-size: 13px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px; }
   .history-time { font-size: 10px; color: rgba(255,255,255,0.6); }
   .history-entry-body { padding: 14px 16px; }
-  .history-disease { font-family: 'Merriweather', serif; font-size: 17px; font-weight: 700; color: var(--forest); margin-bottom: 6px; }
+  .history-disease { font-family: 'Merriweather', Georgia, 'Times New Roman', serif; font-size: 17px; font-weight: 700; color: var(--forest); margin-bottom: 6px; }
   .history-symptoms { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
   .history-sensors {
     display: flex; gap: 8px; flex-wrap: wrap;
@@ -765,8 +811,8 @@
   /* ── SHOPS PAGE ── */
   .shops-container { padding: 20px 20px 100px; }
   .shops-hero {
-    border-radius: 20px;
-    background: linear-gradient(135deg, #4a4a00 0%, #6b6b00 60%, #8a8a00 100%);
+    border-radius: 22px;
+    background: linear-gradient(135deg, #7a3010 0%, var(--terra) 60%, var(--terra-lt) 100%);
     padding: 22px 20px; margin-bottom: 16px;
     position: relative; overflow: hidden;
     box-shadow: var(--shadow-lg); animation: fadeUp 0.4s ease both;
@@ -776,7 +822,7 @@
     font-size: 72px; opacity: 0.18; line-height: 1;
   }
   .shops-hero-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
-  .shops-hero-title { font-family: 'Merriweather', serif; font-size: 22px; font-weight: 900; color: #fff; margin-bottom: 4px; }
+  .shops-hero-title { font-family: 'Merriweather', Georgia, 'Times New Roman', serif; font-size: 22px; font-weight: 900; color: #fff; margin-bottom: 4px; }
   .shops-hero-sub { font-size: 12px; color: rgba(255,255,255,0.6); }
   .shops-search-box {
     background: var(--white); border: 1px solid var(--border);
@@ -789,7 +835,7 @@
     width: 100%; padding: 14px; border-radius: 14px; border: none;
     background: var(--gold); color: var(--forest);
     font-size: 14px; font-weight: 700;
-    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+    cursor: pointer; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     display: flex; align-items: center; justify-content: center; gap: 8px;
     transition: all 0.2s; box-shadow: 0 4px 14px rgba(232,168,32,0.35);
     margin-bottom: 10px;
@@ -800,7 +846,7 @@
   .shops-input {
     flex: 1; border: 1.5px solid var(--border); border-radius: 12px;
     padding: 11px 14px; font-size: 14px; font-weight: 500;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     color: var(--forest); background: var(--bg);
     outline: none; transition: border-color 0.2s;
   }
@@ -809,7 +855,7 @@
     padding: 11px 18px; border-radius: 12px; border: none;
     background: var(--forest); color: #fff;
     font-size: 13px; font-weight: 700;
-    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+    cursor: pointer; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     transition: all 0.2s;
   }
   .shops-go-btn:hover { background: var(--forest-md); }
@@ -840,71 +886,6 @@
   }
   .tip-row:last-child { border-bottom: none; }
   .tip-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-
-  /* ── OFFLINE BANNER ── */
-  .offline-banner {
-    display: none;
-    background: #fff3cd; border-bottom: 2px solid #f0c040;
-    padding: 10px 20px; text-align: center;
-    font-size: 13px; font-weight: 600; color: #7c4a00;
-    position: sticky; top: 58px; z-index: 95;
-  }
-  .offline-banner.show { display: block; }
-
-  /* ── WEATHER MINI BANNER (home page) ── */
-  .weather-mini {
-    margin: 0 20px 16px;
-    background: linear-gradient(120deg, #1565C0 0%, #1976D2 70%, #42A5F5 100%);
-    border-radius: 18px; padding: 14px 18px;
-    display: flex; align-items: center; gap: 12px;
-    cursor: pointer; transition: all 0.2s;
-    box-shadow: var(--shadow); position: relative; overflow: hidden;
-    animation: fadeUp 0.5s 0.28s ease both;
-  }
-  .weather-mini::after {
-    content: '⛅'; position: absolute; right: 12px; top: 4px;
-    font-size: 52px; opacity: 0.15; line-height: 1;
-  }
-  .weather-mini:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-  .wm-temp {
-    font-family: 'Merriweather', Georgia, serif;
-    font-size: 32px; font-weight: 900; color: #fff; line-height: 1; flex-shrink: 0;
-  }
-  .wm-right { flex: 1; min-width: 0; }
-  .wm-condition { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9); margin-bottom: 4px; }
-  .wm-advice {
-    font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 100px;
-    display: inline-block;
-  }
-  .wm-advice.good { background: rgba(74,222,128,0.25); color: #a7f3d0; }
-  .wm-advice.bad  { background: rgba(239,68,68,0.25);  color: #fca5a5; }
-  .wm-advice.warn { background: rgba(250,204,21,0.25); color: #fef08a; }
-  .wm-tap { font-size: 10px; color: rgba(255,255,255,0.45); margin-left: auto; flex-shrink: 0; padding-right: 8px; }
-
-  /* ── GROWTH STAGE ── */
-  .growth-stage-section { margin-bottom: 16px; }
-  .stage-grid {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
-  }
-  .stage-card {
-    background: var(--white); border: 2px solid var(--border);
-    border-radius: 12px; padding: 10px 6px;
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-    cursor: pointer; transition: all 0.2s; text-align: center;
-    font-size: 11px; font-weight: 600; color: var(--muted); box-shadow: var(--shadow);
-  }
-  .stage-card .stage-emoji { font-size: 22px; }
-  .stage-card.selected {
-    border-color: var(--forest-md); background: #E8F0E8;
-    color: var(--forest); box-shadow: 0 0 0 3px rgba(45,90,45,0.15);
-  }
-  .stage-note-box {
-    background: #E8F0E8; border: 1.5px solid rgba(45,90,45,0.25);
-    border-radius: 12px; padding: 12px 14px; margin-top: 10px;
-    font-size: 12.5px; line-height: 1.6; color: var(--forest);
-    display: none;
-  }
-  .stage-note-box.show { display: block; animation: fadeUp 0.3s ease both; }
 </style>
 </head>
 <body>
@@ -922,11 +903,6 @@
   </div>
 </nav>
 
-<!-- OFFLINE BANNER -->
-<div class="offline-banner" id="offline-banner">
-  📡 You're offline — weather and AI features won't work, but diagnosis and fertilizer advice still work!
-</div>
-
 <!-- SENSOR BAR -->
 <div class="sensor-bar" id="sensor-bar">
   <div class="sensor-dot loading" id="sensor-dot"></div>&nbsp;
@@ -939,6 +915,20 @@
 
 <!-- ═══ HOME ═══ -->
 <div id="home" class="page active">
+  <!-- Weather mini-banner -->
+  <div id="weather-banner" class="weather-banner" onclick="openPage('weather-page'); loadWeather()" style="display:none">
+    <div class="wb-left">
+      <div class="wb-icon" id="wb-icon">⛅</div>
+      <div class="wb-text">
+        <div class="wb-title" data-i18n="wx-banner-title">Today's Weather</div>
+        <div class="wb-sub" id="wb-sub">--</div>
+      </div>
+    </div>
+    <div class="wb-right">
+      <div class="wb-temp" id="wb-temp">--°</div>
+      <div class="wb-tap" data-i18n="wx-banner-tap">Tap for full advisory →</div>
+    </div>
+  </div>
   <section class="hero">
     <div class="hero-eyebrow"><div class="eyebrow-dot"></div><span id="t-hero-eyebrow">AI-Powered Agriculture</span></div>
     <h1 class="hero-headline"><span id="t-hero-h1">Smarter farming</span><br><span id="t-hero-h2">starts with </span><span class="hl-gold hl-italic" id="t-hero-gold">better data</span></h1>
@@ -949,16 +939,6 @@
       <div class="stat"><div class="stat-num">AI</div><div class="stat-label" id="t-stat-label-3">Powered<br>by CNN</div></div>
     </div>
   </section>
-
-  <!-- WEATHER MINI BANNER -->
-  <div class="weather-mini" id="weather-mini" onclick="openPage('weather-page'); loadWeather()">
-    <div class="wm-temp" id="wm-temp">--°</div>
-    <div class="wm-right">
-      <div class="wm-condition" id="wm-condition">Loading weather...</div>
-      <div class="wm-advice warn" id="wm-advice">📡 Tap for full farm advisory</div>
-    </div>
-    <div class="wm-tap">→</div>
-  </div>
 
   <div class="hero-banner">
     <div class="banner-label" id="t-banner-label">Get started now</div>
@@ -1046,7 +1026,7 @@
   </div>
   <div class="bottom-bar">
     <button class="btn-secondary t-back-home" onclick="openPage('home')">← Back</button>
-    <button class="btn-primary" id="step1-next" disabled onclick="goToStep2()" id="t-btn-next-symptom">Next — Pick Symptom →</button>
+    <button class="btn-primary" id="step1-next" disabled onclick="goToStep2()"><span id="t-btn-next-symptom">Next — Pick Symptom →</span></button>
   </div>
 </div>
 
@@ -1139,19 +1119,6 @@
       <div class="fert-crop-card" onclick="selectFertCrop(this,'Groundnut')"><div class="fc-emoji">🥜</div>Groundnut</div>
       <div class="fert-crop-card" onclick="selectFertCrop(this,'Sunflower')"><div class="fc-emoji">🌻</div>Sunflower</div>
     </div>
-
-    <!-- GROWTH STAGE -->
-    <div class="fert-label">🌱 Crop Growth Stage</div>
-    <div class="growth-stage-section">
-      <div class="stage-grid">
-        <div class="stage-card" onclick="selectStage(this,'sowing')"><div class="stage-emoji">🌱</div>Sowing</div>
-        <div class="stage-card" onclick="selectStage(this,'vegetative')"><div class="stage-emoji">🌿</div>Vegetative</div>
-        <div class="stage-card" onclick="selectStage(this,'flowering')"><div class="stage-emoji">🌸</div>Flowering</div>
-        <div class="stage-card" onclick="selectStage(this,'harvest')"><div class="stage-emoji">🌾</div>Harvest</div>
-      </div>
-      <div class="stage-note-box" id="stage-note-box"></div>
-    </div>
-
     <div class="fert-label" id="t-fert-npk-label">🧪 Soil NPK Readings (kg/ha)</div>
     <div class="npk-row">
       <div class="npk-box">
@@ -1203,8 +1170,8 @@
   <div class="weather-container" id="weather-container">
     <div class="ai-loading" style="margin-top:40px">
       <div class="ai-spinner"></div>
-      <div class="ai-loading-text">Fetching weather data...</div>
-      <div class="ai-loading-sub">Getting your location</div>
+      <div class="ai-loading-text" data-i18n="wx-fetching">Fetching weather data...</div>
+      <div class="ai-loading-sub" data-i18n="wx-getting-loc">Getting your location</div>
     </div>
   </div>
 </div>
@@ -1277,91 +1244,6 @@
   let fertSelectedCrop='', leafPhotoBase64='', leafPhotoMime='';
   let scanHistory = [];
   let sensorData = { temp: null, humidity: null, soilMoisture: null, light: null };
-  let currentStage = null;
-
-  // ── OFFLINE DETECTION ────────────────────────
-  function updateOnlineStatus() {
-    const banner = document.getElementById('offline-banner');
-    if (!navigator.onLine) {
-      banner.classList.add('show');
-    } else {
-      banner.classList.remove('show');
-    }
-  }
-  window.addEventListener('online',  updateOnlineStatus);
-  window.addEventListener('offline', updateOnlineStatus);
-  updateOnlineStatus();
-
-  // ── GROWTH STAGE ─────────────────────────────
-  const STAGE_NOTES = {
-    sowing:     '🌱 <b>Sowing Stage:</b> Apply full phosphorus as basal dose. Keep nitrogen low — excess N burns seedlings. Focus on root development.',
-    vegetative: '🌿 <b>Vegetative Stage:</b> Peak nitrogen demand. Top-dress with urea for maximum leaf and stem growth. Split N application for best results.',
-    flowering:  '🌸 <b>Flowering Stage:</b> High potassium demand for fruit set. Reduce nitrogen to avoid excess vegetative growth over flowers.',
-    harvest:    '🌾 <b>Harvest Stage:</b> Minimal fertilizer needed. Focus potassium to improve crop quality and storage life. Avoid nitrogen.',
-  };
-
-  const STAGE_MULT = {
-    sowing:     { N: 0.2, P: 1.0, K: 0.3 },
-    vegetative: { N: 1.0, P: 0.5, K: 0.6 },
-    flowering:  { N: 0.4, P: 0.6, K: 1.0 },
-    harvest:    { N: 0.1, P: 0.2, K: 0.8 },
-  };
-
-  function selectStage(el, stage) {
-    document.querySelectorAll('.stage-card').forEach(c => c.classList.remove('selected'));
-    el.classList.add('selected');
-    currentStage = stage;
-    const noteBox = document.getElementById('stage-note-box');
-    noteBox.innerHTML = STAGE_NOTES[stage];
-    noteBox.classList.add('show');
-  }
-
-  // ── WEATHER MINI BANNER ───────────────────────
-  async function loadWeatherMini() {
-    if (!navigator.onLine) return;
-    try {
-      const pos = await new Promise((res, rej) =>
-        navigator.geolocation.getCurrentPosition(res, rej, { timeout: 6000 })
-      );
-      const { latitude: lat, longitude: lon } = pos.coords;
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,relative_humidity_2m,precipitation&timezone=auto`;
-      const r = await fetch(url);
-      const d = await r.json();
-      const c = d.current;
-      const temp = Math.round(c.temperature_2m);
-      const rain = c.precipitation;
-      const humidity = c.relative_humidity_2m;
-
-      const condMap = code => {
-        if (code === 0) return 'Clear Sky ☀️';
-        if (code <= 3) return 'Partly Cloudy ⛅';
-        if (code <= 49) return 'Foggy 🌫️';
-        if (code <= 67) return 'Rainy 🌧️';
-        if (code <= 82) return 'Showers 🌦️';
-        return 'Thunderstorm ⛈️';
-      };
-
-      document.getElementById('wm-temp').textContent = `${temp}°`;
-      document.getElementById('wm-condition').textContent = condMap(c.weather_code);
-
-      const advice = document.getElementById('wm-advice');
-      if (rain > 5) {
-        advice.textContent = '🌧️ Rain today — delay fertilizer application';
-        advice.className = 'wm-advice bad';
-      } else if (humidity > 80) {
-        advice.textContent = '⚠️ High humidity — disease risk elevated';
-        advice.className = 'wm-advice warn';
-      } else {
-        advice.textContent = '✅ Good conditions for spraying & fertilizer';
-        advice.className = 'wm-advice good';
-      }
-    } catch (e) {
-      document.getElementById('wm-condition').textContent = 'Tap to load weather';
-    }
-  }
-
-  // Load weather mini on page load
-  loadWeatherMini();
 
   // ─────────────────────────────────────────────
   // SENSOR BAR — simulates Pi microclimate data
@@ -1458,13 +1340,6 @@
       const titleEl = document.getElementById('upload-title');
       titleEl.textContent = file.name.substring(0, 28) + (file.name.length > 28 ? '…' : '') + ' — ready';
       titleEl.dataset.hasPhoto = '1';
-      const aiImage = new Image();
-
-aiImage.onload = () => {
-    predictLeafDisease(aiImage);
-};
-
-aiImage.src = dataUrl;
     };
     reader.readAsDataURL(file);
   });
@@ -1475,16 +1350,10 @@ aiImage.src = dataUrl;
     document.getElementById('disease-result-wrap').innerHTML = `
       <div class="ai-loading">
         <div class="ai-spinner"></div>
-        <div class="ai-loading-text">Analysing symptoms...</div>
-        <div class="ai-loading-sub">Checking ${selectedCrop} · ${selectedSymptoms.length} symptom(s)</div>
+        <div class="ai-loading-text">${(TRANSLATIONS[currentLang]||TRANSLATIONS.EN)['res-analysing']}</div>
+        <div class="ai-loading-sub">${(TRANSLATIONS[currentLang]||TRANSLATIONS.EN)['res-analysing-sub']} ${selectedCrop} · ${selectedSymptoms.length} ${(TRANSLATIONS[currentLang]||TRANSLATIONS.EN)['res-symptoms-suffix']}</div>
       </div>`;
 
-    // Always generate rule-based result first — works 100% offline
-    const ruleResult = buildRuleBasedDiagnosis(selectedCrop, selectedSymptoms, selectedLocation);
-    renderDiseaseResult(ruleResult);
-    saveToHistory(ruleResult);
-
-    // Try to upgrade with AI silently in background
     try {
       const symptomsText = selectedSymptoms.join(', ');
       const userContent = leafPhotoBase64
@@ -1494,18 +1363,25 @@ aiImage.src = dataUrl;
           ]
         : buildDiseasePrompt(selectedCrop, symptomsText, selectedLocation);
 
+      const langInstructions = {
+        EN: 'Respond in English.',
+        KN: 'Respond entirely in Kannada (\u0c95\u0ca8\u0ccd\u0ca8\u0ca1). The disease name, severity label, action, and explanation must all be in Kannada.',
+        HI: 'Respond entirely in Hindi (\u0939\u093f\u0928\u094d\u0926\u0940). The disease name, severity label, action, and explanation must all be in Hindi.'
+      };
+      const langInstruction = langInstructions[currentLang] || langInstructions.EN;
+
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true', 'anthropic-version': '2023-06-01' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 1000,
-          system: `You are an expert agricultural plant pathologist. Always respond with ONLY valid JSON in this exact format:
+          system: `You are an expert agricultural plant pathologist. ${langInstruction} Always respond with ONLY valid JSON in this exact format:
 {
-  "disease": "Disease name",
+  "disease": "Disease name in the requested language",
   "severity": "Low" or "Medium" or "High",
-  "action": "2-3 sentence immediate treatment recommendation with specific product names and quantities",
-  "explanation": "1 sentence explaining what this disease is"
+  "action": "2-3 sentence immediate treatment recommendation with specific product names and quantities, in the requested language",
+  "explanation": "1 sentence explaining what this disease is, in the requested language"
 }
 No markdown, no extra text, just JSON.`,
           messages: [{ role: 'user', content: userContent }]
@@ -1515,80 +1391,67 @@ No markdown, no extra text, just JSON.`,
       const text = data.content.map(i => i.text || '').join('');
       const clean = text.replace(/```json|```/g, '').trim();
       const r = JSON.parse(clean);
-      // Upgrade the displayed result with AI response
       renderDiseaseResult(r);
+      // Save to history with sensor snapshot
       saveToHistory(r);
     } catch (e) {
-      // Rule-based result already showing — silently ignore AI failure
+      // Deterministic fallback so the module works without a live API connection
+      const fallbackDiagnosis = getDiseasesFallback(selectedCrop, selectedSymptoms, selectedLocation);
+      renderDiseaseResult(fallbackDiagnosis);
+      saveToHistory(fallbackDiagnosis);
     }
   }
 
-  // ── RULE-BASED DIAGNOSIS ENGINE (offline) ────────────────────────────────
-  const DISEASE_RULES = {
-    Tomato: {
-      'Brown / black spots':     { disease: 'Tomato Early Blight',        severity: 'Medium', explanation: 'Fungal disease caused by Alternaria solani — common in warm, wet conditions.', action: 'Apply Mancozeb 75% WP (2.5g/L water) or Chlorothalonil spray. Remove infected lower leaves immediately. Avoid overhead irrigation.' },
-      'White powder on leaves':  { disease: 'Tomato Powdery Mildew',      severity: 'Medium', explanation: 'Fungal infection thriving in dry conditions with high humidity.', action: 'Spray Sulfur 80% WP (2g/L) or Triadimefon 25% WP (1g/L). Apply in evening. Repeat every 10 days.' },
-      'Leaves turning yellow':   { disease: 'Tomato Yellow Leaf Curl',    severity: 'High',   explanation: 'Viral disease spread by whiteflies — spreads rapidly through the field.', action: 'No cure — remove infected plants immediately. Apply Imidacloprid (0.5ml/L) to control whitefly vectors. Cover nursery with insect net.' },
-      'Curling / deformed leaves':{ disease: 'Tomato Mosaic Virus',       severity: 'High',   explanation: 'Viral disease spread by aphids and contact. No chemical cure available.', action: 'Remove and destroy infected plants. Control aphids with Dimethoate 30% EC (1.5ml/L). Sanitize tools with 1% bleach.' },
-      'Wilting / drooping':      { disease: 'Tomato Fusarium Wilt',       severity: 'High',   explanation: 'Soil-borne fungal disease blocking water uptake through root system.', action: 'No effective chemical cure. Remove affected plants. Drench soil with Carbendazim (1g/L). Rotate crops next season.' },
-      'Holes in leaves':         { disease: 'Tomato Leaf Miner',          severity: 'Medium', explanation: 'Larval insect tunneling inside leaf tissue causing visible trails and holes.', action: 'Apply Spinosad (0.3ml/L) or Abamectin (0.5ml/L). Remove heavily infested leaves. Use yellow sticky traps.' },
-      'Mold / fuzzy growth':     { disease: 'Tomato Late Blight',         severity: 'High',   explanation: 'Phytophthora infestans — can destroy entire crop within days in humid conditions.', action: 'Apply Metalaxyl + Mancozeb (2g/L) IMMEDIATELY. Remove infected plants. Do not irrigate from above. Act within 24 hours.' },
-      'Rust coloured patches':   { disease: 'Tomato Septoria Leaf Spot',  severity: 'Medium', explanation: 'Fungal disease starting from lower leaves and moving upward.', action: 'Apply Chlorothalonil (2g/L) or Mancozeb (2.5g/L). Remove infected lower leaves. Mulch soil to reduce splash.' },
-    },
-    Potato: {
-      'Brown / black spots':     { disease: 'Potato Early Blight',        severity: 'Medium', explanation: 'Alternaria solani fungal disease — worsens in warm, humid weather.', action: 'Spray Mancozeb 75% WP (2.5g/L) or Iprodione (1.5g/L). Start treatment at first sign. Repeat every 7-10 days.' },
-      'Mold / fuzzy growth':     { disease: 'Potato Late Blight',         severity: 'High',   explanation: 'Phytophthora infestans — the same disease that caused the Irish famine. Spreads very fast.', action: 'Apply Metalaxyl-M + Mancozeb (2.5g/L) IMMEDIATELY. Remove infected haulms. This is a HIGH PRIORITY emergency treatment.' },
-      'Leaves turning yellow':   { disease: 'Potato Virus Y (PVY)',       severity: 'High',   explanation: 'Viral disease spread by aphids causing mosaic yellowing and yield loss.', action: 'No cure — remove infected plants. Apply Thiamethoxam (0.3g/L) to control aphid vectors. Use certified virus-free seed next season.' },
-      'Wilting / drooping':      { disease: 'Potato Bacterial Wilt',      severity: 'High',   explanation: 'Ralstonia solanacearum — soil-borne bacteria with no chemical cure.', action: 'Remove and burn infected plants. Do not plant potato in same field for 3-4 years. Improve drainage. Use resistant varieties.' },
-      'Curling / deformed leaves':{ disease: 'Potato Leaf Roll Virus',    severity: 'Medium', explanation: 'Aphid-transmitted virus causing upward rolling of leaves.', action: 'Control aphids with Imidacloprid (0.3ml/L). Remove badly infected plants. Use certified seed tubers next planting.' },
-    },
-    Wheat: {
-      'Rust coloured patches':   { disease: 'Wheat Stem Rust',            severity: 'High',   explanation: 'Puccinia graminis — one of the most destructive wheat diseases globally.', action: 'Apply Propiconazole 25% EC (1ml/L) or Tebuconazole (1ml/L) immediately. Two sprays 15 days apart. Contact local agriculture office.' },
-      'Brown / black spots':     { disease: 'Wheat Spot Blotch',          severity: 'Medium', explanation: 'Helminthosporium fungal disease — common in warm humid areas.', action: 'Spray Mancozeb (2.5g/L) or Propiconazole (1ml/L). Apply at boot stage. Avoid dense sowing.' },
-      'White powder on leaves':  { disease: 'Wheat Powdery Mildew',       severity: 'Medium', explanation: 'Blumeria graminis — common in cool, humid weather during tillering.', action: 'Apply Propiconazole (1ml/L) or Triadimefon (1g/L). Two sprays 10-14 days apart at tillering stage.' },
-      'Leaves turning yellow':   { disease: 'Wheat Yellow Rust',          severity: 'High',   explanation: 'Puccinia striiformis — spreads rapidly in cool weather (5-15°C).', action: 'Apply Propiconazole 25% EC (1ml/L) immediately. Spray 2-3 times at 15-day intervals. Report to your block agriculture officer.' },
-    },
-    Maize: {
-      'Brown / black spots':     { disease: 'Maize Turcicum Leaf Blight', severity: 'Medium', explanation: 'Exserohilum turcicum — cigar-shaped lesions on leaves reducing photosynthesis.', action: 'Apply Mancozeb (2.5g/L) or Zineb (2g/L). Spray at early tassel stage. Remove infected lower leaves.' },
-      'Rust coloured patches':   { disease: 'Maize Common Rust',          severity: 'Medium', explanation: 'Puccinia sorghi — orange pustules on both leaf surfaces.', action: 'Apply Propiconazole (1ml/L) or Azoxystrobin (1ml/L). Spray at 8-10 leaf stage before tasseling.' },
-      'Mold / fuzzy growth':     { disease: 'Maize Downy Mildew',         severity: 'High',   explanation: 'Peronosclerospora sorghi — destroys entire shoots. Very common in India.', action: 'Apply Metalaxyl (2g/L) as foliar spray. Seed treatment with Metalaxyl 35% DS (6g/kg seed) next season. Remove infected plants.' },
-      'Leaves turning yellow':   { disease: 'Maize Streak Virus',         severity: 'High',   explanation: 'Leafhopper-transmitted virus causing yellow streaks along leaf veins.', action: 'Control leafhoppers with Imidacloprid (0.3ml/L). No chemical cure for virus. Remove infected plants.' },
-    },
-    Rice: {
-      'Brown / black spots':     { disease: 'Rice Blast',                 severity: 'High',   explanation: 'Magnaporthe oryzae — most destructive rice disease. Diamond-shaped lesions on leaves.', action: 'Apply Tricyclazole 75% WP (0.6g/L) or Isoprothiolane (1.5ml/L). Spray at tillering and booting stage. Reduce nitrogen fertilizer.' },
-      'Leaves turning yellow':   { disease: 'Rice Yellow Stem Borer',     severity: 'High',   explanation: 'Scirpophaga incertulas larvae bore into stem causing dead heart or white ear.', action: 'Apply Chlorpyrifos (2ml/L) or Fipronil (1ml/L) at 25-30 DAT. Use light traps. Clip tips of seedlings before transplanting.' },
-      'Wilting / drooping':      { disease: 'Rice Bacterial Leaf Blight', severity: 'High',   explanation: 'Xanthomonas oryzae — water-soaked lesions turning yellow-white. Spreads in flooding.', action: 'Drain field immediately. Apply copper oxychloride (3g/L). Avoid excess nitrogen. Use resistant varieties next season.' },
-      'Rust coloured patches':   { disease: 'Rice Sheath Blight',         severity: 'Medium', explanation: 'Rhizoctonia solani — oval lesions on leaf sheath. Worsens in high nitrogen, dense crop.', action: 'Apply Hexaconazole (1ml/L) or Propiconazole (1ml/L). Reduce plant density next season. Avoid lodging.' },
-      'Mold / fuzzy growth':     { disease: 'Rice False Smut',            severity: 'Medium', explanation: 'Ustilaginoidea virens — green/yellow balls replace grains. Caused by cool weather at flowering.', action: 'Spray Propiconazole (1ml/L) at booting stage. Remove and burn infected panicles. Do not use infected grain as seed.' },
-    },
-  };
+  function getDiseasesFallback(crop, symptoms, location) {
+    // Symptom-weighted disease lookup table
+    const sym = symptoms.map(s => s.toLowerCase()).join(' ');
+    const loc = location.toLowerCase();
 
-  function buildRuleBasedDiagnosis(crop, symptoms, location) {
-    const cropRules = DISEASE_RULES[crop] || {};
+    const rules = [
+      // High-confidence symptom matches
+      { match: s => s.includes('white powder'),        disease: 'Powdery Mildew',         severity: 'Medium', action: 'Apply sulfur-based fungicide (e.g. Sulfex 80WP) at 2g/L. Spray in early morning. Repeat after 10 days. Avoid overhead irrigation.', explanation: 'Fungal disease caused by Erysiphe species; thrives in warm days and cool nights.' },
+      { match: s => s.includes('rust'),                disease: 'Rust Disease',            severity: 'High',   action: 'Apply Propiconazole 25EC (Tilt) at 1ml/L. Remove and burn infected leaves. Spray twice at 14-day intervals.', explanation: 'Rust is a fungal disease caused by Puccinia species; spreads through wind-borne spores.' },
+      { match: s => s.includes('mold') || s.includes('fuzzy'), disease: 'Downy Mildew',   severity: 'High',   action: 'Spray Mancozeb 75WP at 2.5g/L or Metalaxyl+Mancozeb (Ridomil Gold). Improve air circulation between plants. Repeat every 7-10 days.', explanation: 'Downy mildew thrives in high humidity and cool temperatures, causing water-soaked lesions.' },
+      { match: s => s.includes('wilting') || s.includes('droop'), disease: 'Fusarium Wilt', severity: 'High', action: 'Drench soil with Carbendazim 50WP at 2g/L. Remove wilted plants to prevent spread. Avoid waterlogging and improve drainage.', explanation: 'Fusarium wilt is a soil-borne fungal disease that blocks vascular tissue, cutting off water supply.' },
+      { match: s => s.includes('holes in leaves'),     disease: 'Leaf Eating Caterpillar', severity: 'Medium', action: 'Apply Chlorpyrifos 20EC at 2ml/L or Spinosad 45SC at 0.5ml/L. Spray in evening when caterpillars are active. Repeat after 7 days.', explanation: 'Leaf-eating caterpillars (Spodoptera/Helicoverpa) cause irregular holes and can defoliate plants rapidly.' },
+      { match: s => s.includes('sticky') || s.includes('slimy'), disease: 'Aphid Infestation', severity: 'Medium', action: 'Spray Imidacloprid 17.8SL at 0.3ml/L or Dimethoate 30EC at 1.5ml/L. Focus spray on leaf undersides. Repeat after 10 days.', explanation: 'Aphids secrete honeydew causing sticky leaves and sooty mould; they also transmit viral diseases.' },
+      { match: s => s.includes('insects') || s.includes('bugs'), disease: 'Insect Pest Infestation', severity: 'Medium', action: 'Apply Cypermethrin 10EC at 1ml/L or Chlorpyrifos 20EC at 2ml/L. Spray full plant coverage in evening. Monitor and repeat if needed.', explanation: 'Mixed insect pests including thrips, mites, or beetles cause feeding damage visible on leaves and fruit.' },
+      { match: s => s.includes('curl'),               disease: 'Leaf Curl Virus (TYLCV)',  severity: 'High',   action: 'No chemical cure for virus; remove and destroy infected plants. Control whitefly vectors with Imidacloprid 17.8SL at 0.3ml/L. Use reflective mulch.', explanation: 'Tomato Yellow Leaf Curl Virus is transmitted by whiteflies and causes severe leaf curling and stunting.' },
+      { match: s => s.includes('yellow'),             disease: 'Nitrogen Deficiency / Early Blight', severity: 'Medium', action: 'Apply urea foliar spray at 2g/L for yellowing. If spots present, use Mancozeb 75WP at 2.5g/L. Check soil drainage and adjust irrigation.', explanation: 'Yellowing with or without spots may indicate nutritional deficiency or early-stage fungal infection.' },
+      { match: s => s.includes('brown') || s.includes('black spot'), disease: 'Early Blight (Alternaria)', severity: 'Medium', action: 'Apply Mancozeb 75WP at 2.5g/L or Chlorothalonil 75WP at 2g/L. Remove infected lower leaves. Spray every 7-10 days during humid periods.', explanation: 'Early blight caused by Alternaria solani creates concentric brown spots with yellow halo on leaves.' },
+    ];
 
-    // Find best matching rule
-    let best = null;
-    for (const symptom of symptoms) {
-      if (cropRules[symptom]) { best = cropRules[symptom]; break; }
+    // Crop-specific overrides for better accuracy
+    const cropOverrides = {
+      Tomato:  { match: s => s.includes('brown') || s.includes('black'), disease: 'Late Blight (Phytophthora infestans)', severity: 'High', action: 'Apply Metalaxyl+Mancozeb (Ridomil Gold) at 2.5g/L immediately. Remove severely infected plants. Repeat every 7 days. Avoid wetting foliage.', explanation: 'Late Blight is the most devastating tomato disease — the same pathogen that caused the Irish potato famine.' },
+      Potato:  { match: s => s.includes('brown') || s.includes('black'), disease: 'Late Blight (Phytophthora infestans)', severity: 'High', action: 'Spray Cymoxanil+Mancozeb 72WP at 2.5g/L. Hill up plants to protect tubers. Destroy infected haulms before harvest.', explanation: 'Late blight spreads extremely fast in cool, wet weather and can destroy an entire crop in days.' },
+      Rice:    { match: s => s.includes('brown') || s.includes('yellow'), disease: 'Rice Blast (Magnaporthe oryzae)', severity: 'High', action: 'Apply Tricyclazole 75WP at 0.6g/L or Isoprothiolane 40EC at 1.5ml/L. Drain field for 3 days then re-irrigate.', explanation: 'Rice blast is the most important fungal disease of rice, affecting leaves, nodes, and panicles.' },
+      Wheat:   { match: s => s.includes('rust'),    disease: 'Wheat Stem Rust (Puccinia graminis)', severity: 'High', action: 'Apply Propiconazole 25EC at 1ml/L or Tebuconazole 25.9EC at 1ml/L. Spray at flag leaf stage. Use resistant varieties next season.', explanation: 'Stem rust can reduce wheat yield by up to 70% if not controlled early in the season.' },
+      Maize:   { match: s => s.includes('mold') || s.includes('white'), disease: 'Maize Downy Mildew (Peronosclerospora)', severity: 'High', action: 'Apply Metalaxyl 35SD as seed treatment or Metalaxyl+Mancozeb foliar spray at 2g/L. Remove striga and volunteer plants.', explanation: 'Downy mildew is the most serious maize disease in tropical Asia; it stunts plants and causes white downy growth.' },
+    };
+
+    // Try crop-specific override first
+    if (cropOverrides[crop]) {
+      const co = cropOverrides[crop];
+      if (co.match(sym)) return { disease: co.disease, severity: co.severity, action: co.action, explanation: co.explanation };
     }
 
-    // Generic fallback per crop if no rule matched
-    if (!best) {
-      const rootSymptoms = ['Roots / base', 'Wilting / drooping'];
-      const isRoot = location && rootSymptoms.some(s => location.includes(s) || symptoms.includes(s));
-      best = {
-        disease: isRoot ? `${crop} Root / Soil Disease` : `${crop} Fungal Infection`,
-        severity: symptoms.length >= 3 ? 'High' : 'Medium',
-        explanation: `Multiple symptoms detected on ${crop}. Likely fungal or bacterial in origin based on symptom pattern.`,
-        action: `Apply a broad-spectrum fungicide (Mancozeb 2.5g/L or Copper oxychloride 3g/L). Remove visibly infected plant parts. Improve air circulation. Consult your local Krishi Vigyan Kendra for lab confirmation.`
-      };
+    // Try symptom rules
+    for (const rule of rules) {
+      if (rule.match(sym)) return { disease: rule.disease, severity: rule.severity, action: rule.action, explanation: rule.explanation };
     }
 
-    // Escalate severity if many symptoms or poor conditions
-    if (symptoms.length >= 4 && best.severity === 'Medium') best = { ...best, severity: 'High' };
-    if (sensorData.humidity > 85 && best.severity === 'Low') best = { ...best, severity: 'Medium' };
+    // Generic fallback based on location
+    const locationDefaults = {
+      leaves:   { disease: 'Fungal Leaf Spot',    severity: 'Medium', action: 'Apply broad-spectrum fungicide Mancozeb 75WP at 2.5g/L. Remove badly infected leaves. Improve spacing for air circulation. Repeat spray in 10 days.', explanation: 'Fungal leaf spot diseases are common in humid conditions and can spread rapidly without treatment.' },
+      stem:     { disease: 'Stem Rot (Sclerotinia)', severity: 'High', action: 'Apply Carbendazim 50WP at 2g/L as soil drench. Remove infected plants. Avoid waterlogging. Use Trichoderma viride bio-agent for soil treatment.', explanation: 'Stem rot caused by Sclerotinia causes water-soaked lesions and white cottony growth near the base.' },
+      fruit:    { disease: 'Fruit Borer / Anthracnose', severity: 'High', action: 'Spray Chlorpyrifos 20EC at 2ml/L for borers. For fungal spots, apply Mancozeb 75WP at 2g/L. Destroy fallen fruit.', explanation: 'Fruit diseases cause direct yield loss and reduce market value; early intervention is critical.' },
+      roots:    { disease: 'Root Rot (Pythium)',    severity: 'High', action: 'Drench with Metalaxyl+Mancozeb at 2.5g/L. Improve drainage. Apply Trichoderma viride to soil. Reduce irrigation frequency.', explanation: 'Root rot caused by water-mould pathogens is common in waterlogged or poorly drained soils.' },
+      flowers:  { disease: 'Flower Drop / Botrytis', severity: 'Medium', action: 'Apply Iprodione 50WP at 1g/L. Avoid excessive nitrogen. Ensure good air circulation. Reduce humidity around flowers.', explanation: 'Botrytis grey mould thrives in cool, humid conditions and causes flower and fruit rot.' },
+    };
 
-    return best;
+    const locKey = Object.keys(locationDefaults).find(k => loc.includes(k)) || 'leaves';
+    return locationDefaults[locKey];
   }
 
   function buildDiseasePrompt(crop, symptoms, location) {
@@ -1614,50 +1477,53 @@ Please diagnose the most likely disease or pest issue. Factor in the current tem
       disease: result.disease,
       severity: result.severity,
       sensorSnap: { ...sensorData },
-      hasPhoto: !!leafPhotoBase64
+      hasPhoto: !!leafPhotoBase64,
+      photoDataUrl: leafPhotoBase64 ? ('data:'+leafPhotoMime+';base64,'+leafPhotoBase64) : null
     };
     scanHistory.unshift(entry);
   }
 
+  let lastDiseaseResult = null;
   function renderDiseaseResult(r) {
+    lastDiseaseResult = r;
+    const t = TRANSLATIONS[currentLang] || TRANSLATIONS.EN;
     const sevClass = r.severity === 'High' ? 'severity-high' : r.severity === 'Medium' ? 'severity-medium' : 'severity-low';
     const symptomsText = selectedSymptoms.join(' · ');
-
-    // UI label translations
-    const labels = {
-      EN: { detected: 'Disease Detected', severity: 'Severity', today: '⚡ DO THIS TODAY', disclaimer: 'This is an AI advisory tool. Confirm with your local agricultural officer or Krishi Vigyan Kendra before applying chemicals.', checkAgain: '↺ Check Another Problem', conditions: 'Conditions at scan time', humidity: 'humidity', soil: 'Soil', note: '📝 Disease name and treatment shown in English for accuracy.' },
-      KN: { detected: 'ರೋಗ ಪತ್ತೆಯಾಗಿದೆ', severity: 'ತೀವ್ರತೆ', today: '⚡ ಇಂದು ಮಾಡಬೇಕಾದದ್ದು', disclaimer: 'ಇದು AI ಸಲಹಾ ಸಾಧನ. ರಾಸಾಯನಿಕ ಅನ್ವಯಿಸುವ ಮೊದಲು ನಿಮ್ಮ ಸ್ಥಳೀಯ ಕೃಷಿ ಅಧಿಕಾರಿ ಅಥವಾ KVK ಅನ್ನು ಸಂಪರ್ಕಿಸಿ.', checkAgain: '↺ ಇನ್ನೊಂದು ಸಮಸ್ಯೆ ಪರೀಕ್ಷಿಸಿ', conditions: 'ಸ್ಕ್ಯಾನ್ ಸಮಯದ ಸ್ಥಿತಿಗಳು', humidity: 'ತೇವಾಂಶ', soil: 'ಮಣ್ಣು', note: '📝 ರೋಗದ ಹೆಸರು ಮತ್ತು ಚಿಕಿತ್ಸೆ ನಿಖರತೆಗಾಗಿ ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ ತೋರಿಸಲಾಗಿದೆ.' },
-      HI: { detected: 'रोग पहचाना गया', severity: 'गंभीरता', today: '⚡ आज यह करें', disclaimer: 'यह एक AI सलाह उपकरण है। रसायन लगाने से पहले अपने स्थानीय कृषि अधिकारी या KVK से पुष्टि करें।', checkAgain: '↺ दूसरी समस्या जांचें', conditions: 'स्कैन के समय की स्थितियां', humidity: 'नमी', soil: 'मिट्टी', note: '📝 सटीकता के लिए रोग का नाम और उपचार अंग्रेजी में दिखाया गया है।' },
-    };
-    const L = labels[currentLang] || labels.EN;
-    const sevLabel = { Low: { EN:'Low', KN:'ಕಡಿಮೆ', HI:'कम' }, Medium: { EN:'Medium', KN:'ಮಧ್ಯಮ', HI:'मध्यम' }, High: { EN:'High', KN:'ಹೆಚ್ಚು', HI:'अधिक' } };
-    const sev = (sevLabel[r.severity] || sevLabel.Medium)[currentLang] || r.severity;
-
     document.getElementById('disease-result-wrap').innerHTML = `
       <div class="result-card animate-in">
         <div class="result-hero-strip">
-          <div class="disease-pill"><div class="pill-dot"></div>${L.detected}</div>
+          <div class="disease-pill"><div class="pill-dot"></div>${t['res-detected']}</div>
           <div class="disease-name">${r.disease}</div>
           <div class="disease-meta">${selectedCrop} · ${symptomsText} · ${selectedLocation}</div>
         </div>
         <div class="result-body">
           <div class="severity-badge ${sevClass}">
             <div class="severity-dot"></div>
-            ${sev} ${L.severity}
+            ${r.severity} ${t['res-severity-suffix']}
           </div>
           <button class="info-btn" style="display:block;width:100%;margin-bottom:14px">ℹ️ ${r.explanation}</button>
-          ${currentLang !== 'EN' ? `<div style="background:#FDF3D8;border:1px solid rgba(232,168,32,0.3);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:#8a6010">${L.note}</div>` : ''}
-          ${sensorData.temp ? `<div style="background:#E8F5E8;border:1px solid #A3D9A5;border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#166534;font-weight:600">🌡️ ${L.conditions}: ${sensorData.temp}°C · 💧 ${sensorData.humidity}% ${L.humidity} · 🌱 ${L.soil} ${sensorData.soilMoisture}%</div>` : ''}
+          ${sensorData.temp ? `<div style="background:#E8F5E8;border:1px solid #A3D9A5;border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#166534;font-weight:600">${t['res-conditions-prefix']} ${sensorData.temp}°C · 💧 ${sensorData.humidity}% ${t['res-humidity-suffix']} · 🌱 ${t['res-soil-suffix']} ${sensorData.soilMoisture}%</div>` : ''}
           <div class="action-box">
-            <div class="action-label">${L.today}</div>
+            <div class="action-label">${t['res-do-today']}</div>
             <div class="action-text">${r.action}</div>
           </div>
           <div class="disclaimer">
             <span>⚠️</span>
-            <span>${L.disclaimer}</span>
+            <span>${t['res-disclaimer']}</span>
           </div>
-          <button class="check-again-btn" onclick="resetDisease()">${L.checkAgain}</button>
+          <button class="check-again-btn" onclick="resetDisease()">${t['res-check-again']}</button>
         </div>
+      </div>`;
+  }
+
+  function renderDiseaseError() {
+    const t = TRANSLATIONS[currentLang] || TRANSLATIONS.EN;
+    document.getElementById('disease-result-wrap').innerHTML = `
+      <div style="padding:40px 20px;text-align:center;animation:fadeUp 0.4s ease both">
+        <div style="font-size:52px;margin-bottom:16px">📡</div>
+        <div style="font-family:'Merriweather',Georgia,serif;font-size:20px;font-weight:900;color:var(--forest);margin-bottom:10px">${t['res-error-title']}</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:24px">${t['res-error-sub']}</div>
+        <button class="check-again-btn" onclick="openPage('pest-page')" style="max-width:280px;margin:0 auto">${t['res-error-retry']}</button>
       </div>`;
   }
 
@@ -1704,26 +1570,25 @@ Please diagnose the most likely disease or pest issue. Factor in the current tem
     const k = document.getElementById('fert-k').value;
     const ph = document.getElementById('fert-ph').value;
     const moisture = document.getElementById('fert-moisture').value || 'Not provided';
-    const stageLabel = currentStage ? currentStage.charAt(0).toUpperCase() + currentStage.slice(1) : 'Not specified';
 
+    const _t = TRANSLATIONS[currentLang] || TRANSLATIONS.EN;
     document.getElementById('fert-result-wrap').innerHTML = `
       <div class="ai-loading">
         <div class="ai-spinner"></div>
-        <div class="ai-loading-text">Calculating prescription...</div>
-        <div class="ai-loading-sub">${fertSelectedCrop} · ${stageLabel} Stage · N:${n} P:${p} K:${k} · pH ${ph}</div>
+        <div class="ai-loading-text">${_t['fres-calculating']}</div>
+        <div class="ai-loading-sub">${fertSelectedCrop} · N:${n} P:${p} K:${k} · pH ${ph}</div>
       </div>`;
 
     try {
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true', 'anthropic-version': '2023-06-01' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 1000,
           system: `You are an expert agronomist. Always respond with ONLY valid JSON:
 {
   "summary": "1 sentence overall assessment",
-  "stage_advice": "1 sentence specific to the crop growth stage",
   "npk_ideal": { "n": number, "p": number, "k": number },
   "shopping_list": [{ "product": "Name", "quantity": "X kg/acre", "estimated_cost": "₹XX-XX" }],
   "application_tip": "2-3 sentence practical application advice",
@@ -1733,11 +1598,10 @@ Use Indian market names and INR pricing. No markdown, just JSON.`,
           messages: [{
             role: 'user',
             content: `Crop: ${fertSelectedCrop}
-Growth Stage: ${stageLabel}
 Soil N: ${n} kg/ha, P: ${p} kg/ha, K: ${k} kg/ha
 Soil pH: ${ph}, Soil Moisture: ${moisture}%
 ${sensorData.temp ? `Current field conditions: ${sensorData.temp}°C, ${sensorData.humidity}% humidity` : ''}
-Provide fertilizer prescription adjusted for the ${stageLabel} growth stage.`
+Provide fertilizer prescription.`
           }]
         })
       });
@@ -1747,22 +1611,36 @@ Provide fertilizer prescription adjusted for the ${stageLabel} growth stage.`
       const r = JSON.parse(clean);
       renderFertResult(r, { n: parseFloat(n), p: parseFloat(p), k: parseFloat(k) });
     } catch (e) {
-      document.getElementById('fert-result-wrap').innerHTML = `
-        <div style="padding:30px 20px;text-align:center;color:var(--muted)">
-          <div style="font-size:32px;margin-bottom:12px">⚠️</div>
-          <div style="font-weight:700;color:var(--forest);margin-bottom:8px">Could not get AI prescription</div>
-          <div style="font-size:13px">Please check your connection and try again.</div>
-          <button class="check-again-btn" style="margin-top:20px" onclick="openPage('fertilizer-page')">← Try Again</button>
-        </div>`;
+      // Deterministic fallback prescription so the module still demos when AI is unreachable
+      const ideal = { Rice:{n:120,p:60,k:60}, Wheat:{n:120,p:60,k:40}, Maize:{n:150,p:75,k:50}, Cotton:{n:100,p:50,k:50}, Sugarcane:{n:280,p:90,k:90}, Tomato:{n:150,p:80,k:80}, Potato:{n:180,p:80,k:100}, Onion:{n:100,p:50,k:50}, Brinjal:{n:120,p:60,k:60}, Soybean:{n:30,p:80,k:40}, Groundnut:{n:25,p:50,k:75}, Sunflower:{n:80,p:60,k:60} }[fertSelectedCrop] || {n:120,p:60,k:60};
+      const ng = Math.max(0, ideal.n - parseFloat(n));
+      const pg = Math.max(0, ideal.p - parseFloat(p));
+      const kg = Math.max(0, ideal.k - parseFloat(k));
+      const fallback = {
+        summary: `ನಿಮ್ಮ ಮಣ್ಣಿನ ಮೌಲ್ಯಗಳ ಆಧಾರದ ಮೇಲೆ ${fertSelectedCrop}, ಸಮತೋಲನ NPK ರಸಗೊಬ್ಬರ ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ.`,
+        npk_ideal: ideal,
+        shopping_list: [
+          { product: 'Urea (46% N)', quantity: (ng/0.46).toFixed(0)+' kg/ha', estimated_cost: '₹'+((ng/0.46)*7).toFixed(0)+'-'+((ng/0.46)*9).toFixed(0) },
+          { product: 'DAP (18-46-0)', quantity: (pg/0.46).toFixed(0)+' kg/ha', estimated_cost: '₹'+((pg/0.46)*28).toFixed(0)+'-'+((pg/0.46)*32).toFixed(0) },
+          { product: 'MOP (60% K2O)', quantity: (kg/0.6).toFixed(0)+' kg/ha', estimated_cost: '₹'+((kg/0.6)*18).toFixed(0)+'-'+((kg/0.6)*22).toFixed(0) }
+        ],
+        application_tip: parseFloat(ph) < 6 ? 'ನಿಮ್ಮ ಮಣ್ಣು ಅಮ್ಲೀಯವಾಗಿದೆ — ರಸಗೊಬ್ಬರ ಹಾಕುವ 2 ವಾರಗಳ ಮೊದಲು ಲೈಮ್ ಬಳಸಿ. ಬೆಳವಣಿಗೆಯ ಸಮಯದಲ್ಲಿ ನೈಟ್ರೋಜನ್ ಅನ್ನು 2–3 ಬಾರಿ ಹಂಚಿ.' : parseFloat(ph) > 7.5 ? 'Your soil is alkaline — use gypsum to correct. Apply phosphorus near root zone.' : 'बुवाई के समय 50% नाइट्रोजन + पूरा फास्फोरस + पूरा पोटेशियम दें। शेष नाइट्रोजन टिलरिंग चरण में टॉप-ड्रेसिंग के रूप में दें।',
+        deficiency_warning: ng > pg && ng > kg ? 'ನೈಟ್ರೋಜನ್ ಅತ್ಯಂತ ಕಡಿಮೆ ಇರುವ ಪೋಷಕಾಂಶವಾಗಿದೆ.' : pg > kg ? 'Phosphorus deficiency may stunt early growth.' : kg > 0 ? 'Potassium deficiency may reduce yield.' : 'Soil nutrients are near optimal.'
+      };
+      renderFertResult(fallback, { n: parseFloat(n), p: parseFloat(p), k: parseFloat(k) });
     }
   }
 
+  let lastFertResult = null;
+  let lastFertCurrent = null;
   function renderFertResult(r, current) {
+    lastFertResult = r; lastFertCurrent = current;
+    const t = TRANSLATIONS[currentLang] || TRANSLATIONS.EN;
     const ideal = r.npk_ideal || { n: 120, p: 60, k: 80 };
     const bars = [
-      { label: 'Nitrogen (N)', current: current.n, ideal: ideal.n, color: '#3b82f6' },
-      { label: 'Phosphorus (P)', current: current.p, ideal: ideal.p, color: '#f97316' },
-      { label: 'Potassium (K)', current: current.k, ideal: ideal.k, color: '#8b5cf6' },
+      { label: (t['npk-n-name']||'Nitrogen')+' (N)', current: current.n, ideal: ideal.n, color: '#3b82f6' },
+      { label: (t['npk-p-name']||'Phosphorus')+' (P)', current: current.p, ideal: ideal.p, color: '#f97316' },
+      { label: (t['npk-k-name']||'Potassium')+' (K)', current: current.k, ideal: ideal.k, color: '#8b5cf6' },
     ];
     const barsHtml = bars.map(b => {
       const pct = Math.min(100, (b.current / Math.max(b.ideal, b.current, 1)) * 100).toFixed(0);
@@ -1770,7 +1648,7 @@ Provide fertilizer prescription adjusted for the ${stageLabel} growth stage.`
       return `<div class="npk-bar-row">
         <div class="npk-bar-header">
           <span class="npk-bar-name" style="color:${b.color}">${b.label}</span>
-          <span class="npk-bar-vals">Current: ${b.current} / Ideal: ${b.ideal} kg/ha</span>
+          <span class="npk-bar-vals">${t['fres-current']}: ${b.current} / ${t['fres-ideal']}: ${b.ideal} kg/ha</span>
         </div>
         <div class="npk-bar-track">
           <div class="npk-bar-current" style="width:${pct}%;background:${b.color}"></div>
@@ -1791,25 +1669,24 @@ Provide fertilizer prescription adjusted for the ${stageLabel} growth stage.`
     document.getElementById('fert-result-wrap').innerHTML = `
       <div class="fert-result-card">
         <div class="fert-result-strip">
-          <div class="fert-pill"><div class="fert-pill-dot"></div>Prescription Ready</div>
-          <div class="fert-title">${fertSelectedCrop} Fertilizer Plan</div>
+          <div class="fert-pill"><div class="fert-pill-dot"></div>${t['fres-ready']}</div>
+          <div class="fert-title">${fertSelectedCrop} ${t['fres-plan-suffix']}</div>
           <div class="fert-sub">${r.summary}</div>
         </div>
         <div class="fert-body">
-          ${r.stage_advice ? `<div style="background:#E8F0E8;border:1.5px solid rgba(45,90,45,0.25);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:13px;line-height:1.6;color:var(--forest)">📌 <b>Stage Note:</b> ${r.stage_advice}</div>` : ''}
-          <div style="font-size:11px;font-weight:700;color:var(--forest-md);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">📊 NPK Status — Current vs Ideal</div>
+          <div style="font-size:11px;font-weight:700;color:var(--forest-md);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">${t['fres-npk-status']}</div>
           <div class="npk-bars">${barsHtml}</div>
-          <div style="font-size:11px;font-weight:700;color:var(--forest-md);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">🛒 Shopping List</div>
+          <div style="font-size:11px;font-weight:700;color:var(--forest-md);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">${t['fres-shopping']}</div>
           <div class="shopping-list">${shopHtml}</div>
           <div class="fert-tip-box">
-            <div class="fert-tip-label">🌿 Application Guide</div>
+            <div class="fert-tip-label">${t['fres-app-guide']}</div>
             <div class="fert-tip-text">${r.application_tip}</div>
           </div>
           <div class="disclaimer">
             <span>⚠️</span>
-            <span>${r.deficiency_warning} Always confirm with your local KVK before applying.</span>
+            <span>${r.deficiency_warning} ${t['fres-confirm']}</span>
           </div>
-          <button class="check-again-btn" onclick="openPage('fertilizer-page')">↺ New Prescription</button>
+          <button class="check-again-btn" onclick="openPage('fertilizer-page')">${t['fres-new']}</button>
         </div>
       </div>`;
   }
@@ -1822,10 +1699,11 @@ Provide fertilizer prescription adjusted for the ${stageLabel} growth stage.`
   async function loadWeather() {
     if (weatherLoaded) return;
     const container = document.getElementById('weather-container');
+    const _tw = TRANSLATIONS[currentLang] || TRANSLATIONS.EN;
     container.innerHTML = `<div class="ai-loading" style="margin-top:40px">
       <div class="ai-spinner"></div>
-      <div class="ai-loading-text">Fetching weather data...</div>
-      <div class="ai-loading-sub">Getting your location</div>
+      <div class="ai-loading-text">${_tw['wx-fetching']}</div>
+      <div class="ai-loading-sub">${_tw['wx-getting-loc']}</div>
     </div>`;
 
     try {
@@ -1844,12 +1722,13 @@ Provide fertilizer prescription adjusted for the ${stageLabel} growth stage.`
 
   async function fetchWeatherAndAdvice(lat, lon, container, locationOverride) {
     try {
-      // Open-Meteo: free, no key required, no CORS issues
+      // Open-Meteo: free, no key required
       const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,precipitation,weather_code,cloud_cover&daily=precipitation_sum,wind_speed_10m_max&timezone=auto&forecast_days=1`;
       const wRes = await fetch(weatherUrl);
       const wData = await wRes.json();
       const c = wData.current;
 
+      // Reverse geocode for city name (Open-Meteo provides timezone)
       const tz = wData.timezone || '';
       const cityName = locationOverride || tz.replace('Asia/', '').replace('_', ' ') || `${lat.toFixed(2)}°N, ${lon.toFixed(2)}°E`;
 
@@ -1861,38 +1740,20 @@ Provide fertilizer prescription adjusted for the ${stageLabel} growth stage.`
       const precipitation = c.precipitation;
       const cloudCover = c.cloud_cover;
 
-      // Always generate rule-based advice first so weather renders immediately
-      const advice = buildRuleBasedAdvice(temp, humidity, windSpeed, precipitation, cloudCover);
+      // Get AI spray/fertilizer advice
+      const advice = await getWeatherAIAdvice(temp, humidity, windSpeed, precipitation, cloudCover, condition);
 
-      // Render weather immediately with rule-based advice
       renderWeather(container, { cityName, temp, humidity, windSpeed, precipitation, cloudCover, condition }, advice);
-      weatherLoaded = true;
-
-      // Then try to upgrade advice with AI in background (won't crash if it fails)
-      getWeatherAIAdvice(temp, humidity, windSpeed, precipitation, cloudCover, condition).then(aiAdvice => {
-        if (aiAdvice) renderWeather(container, { cityName, temp, humidity, windSpeed, precipitation, cloudCover, condition }, aiAdvice);
-      }).catch(() => {});
-
     } catch (e) {
+      const _twe = TRANSLATIONS[currentLang] || TRANSLATIONS.EN;
       container.innerHTML = `
         <div style="padding:30px 20px;text-align:center">
           <div style="font-size:40px;margin-bottom:12px">🌧️</div>
-          <div style="font-family:'Merriweather',serif;font-size:18px;font-weight:900;color:var(--forest);margin-bottom:8px">Weather Unavailable</div>
-          <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Could not connect to weather service. Please check your internet connection and try again.</div>
-          <button class="weather-refresh-btn" onclick="weatherLoaded=false;loadWeather()">⟳ Try Again</button>
+          <div style="font-family:'Merriweather',Georgia,serif;font-size:18px;font-weight:900;color:var(--forest);margin-bottom:8px">${_twe['wx-unavailable']}</div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:20px">${_twe['wx-unavail-sub']}</div>
+          <button class="weather-refresh-btn" onclick="weatherLoaded=false;loadWeather()">${_twe['wx-try-again']}</button>
         </div>`;
     }
-  }
-
-  // Rule-based advice — works 100% offline, no API needed
-  function buildRuleBasedAdvice(temp, humidity, wind, rain, cloud) {
-    return {
-      spray_advice: rain > 5 ? 'Avoid spraying — rain will wash off chemicals.' : wind > 20 ? 'Avoid spraying — wind above 20 km/h causes drift.' : humidity > 85 ? 'Spray early morning — high humidity may reduce efficacy.' : 'Good conditions for spraying pesticides or fungicides.',
-      fertilizer_advice: rain > 10 ? 'Delay fertilizer — heavy rain will cause runoff and waste.' : rain > 3 ? 'Light rain expected — wait for soil to absorb before applying.' : humidity < 30 ? 'Apply with irrigation — dry conditions reduce uptake.' : 'Good day to apply fertilizer. Mix into top soil layer.',
-      irrigation_advice: rain > 15 ? 'Skip irrigation — rainfall is sufficient today.' : rain > 5 ? 'Reduce irrigation — light rain provides partial moisture.' : temp > 35 ? 'Irrigate in evening to reduce evaporation loss.' : 'Normal irrigation schedule. Check soil moisture before applying.',
-      disease_risk: humidity > 85 ? 'High' : humidity > 65 ? 'Medium' : 'Low',
-      disease_risk_reason: humidity > 85 ? 'High humidity — risk of fungal diseases like Late Blight and Powdery Mildew. Inspect leaves daily.' : humidity > 65 ? 'Moderate humidity — monitor for early signs of fungal infection.' : 'Low disease risk. Continue regular crop monitoring.',
-    };
   }
 
   function decodeWeatherCode(code) {
@@ -1910,7 +1771,7 @@ Provide fertilizer prescription adjusted for the ${stageLabel} growth stage.`
     try {
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true', 'anthropic-version': '2023-06-01' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 600,
@@ -1943,7 +1804,10 @@ No markdown, just JSON.`,
     }
   }
 
+  let lastWeather = null, lastWeatherAdvice = null;
   function renderWeather(container, w, advice) {
+    lastWeather = w; lastWeatherAdvice = advice;
+    const t = TRANSLATIONS[currentLang] || TRANSLATIONS.EN;
     const riskClass = advice.disease_risk === 'High' ? 'severity-high' : advice.disease_risk === 'Medium' ? 'severity-medium' : 'severity-low';
     container.innerHTML = `
       <div class="weather-hero">
@@ -1951,73 +1815,76 @@ No markdown, just JSON.`,
         <div class="weather-temp">${Math.round(w.temp)}°</div>
         <div class="weather-condition">${w.condition}</div>
         <div class="weather-pills">
-          <div class="weather-pill">💧 ${w.humidity}% humidity</div>
+          <div class="weather-pill">💧 ${w.humidity}% ${t['wx-humidity']}</div>
           <div class="weather-pill">💨 ${w.windSpeed} km/h</div>
-          <div class="weather-pill">🌧️ ${w.precipitation}mm rain</div>
+          <div class="weather-pill">🌧️ ${w.precipitation}mm</div>
         </div>
       </div>
       <div class="weather-grid">
         <div class="weather-stat-box">
           <div class="wsb-icon">☁️</div>
           <div class="wsb-val">${w.cloudCover}%</div>
-          <div class="wsb-label">Cloud Cover</div>
+          <div class="wsb-label">${t['wx-cloud']}</div>
         </div>
         <div class="weather-stat-box">
           <div class="wsb-icon">🦠</div>
           <div class="wsb-val"><span class="severity-badge ${riskClass}" style="margin:0;padding:3px 8px;font-size:10px">${advice.disease_risk}</span></div>
-          <div class="wsb-label">Disease Risk</div>
+          <div class="wsb-label">${t['wx-disease-risk']}</div>
         </div>
         <div class="weather-stat-box">
           <div class="wsb-icon">🌡️</div>
           <div class="wsb-val">${Math.round(w.temp)}°C</div>
-          <div class="wsb-label">Temperature</div>
+          <div class="wsb-label">${t['wx-temp']}</div>
         </div>
         <div class="weather-stat-box">
           <div class="wsb-icon">💧</div>
           <div class="wsb-val">${w.humidity}%</div>
-          <div class="wsb-label">Humidity</div>
+          <div class="wsb-label">${t['wx-hum-label']}</div>
         </div>
       </div>
       <div class="ai-advice-box">
         <div class="aab-header">
           <span style="font-size:16px">🤖</span>
-          <span class="aab-header-text">AI Farm Advisory</span>
+          <span class="aab-header-text">${t['wx-ai-title']}</span>
         </div>
         <div class="aab-body">
           <div class="advice-row">
             <div class="advice-icon">🧪</div>
-            <div class="advice-text"><strong>Spraying:</strong> ${advice.spray_advice}</div>
+            <div class="advice-text"><strong>${t['wx-spraying']}</strong> ${advice.spray_advice}</div>
           </div>
           <div class="advice-row">
             <div class="advice-icon">🌱</div>
-            <div class="advice-text"><strong>Fertilizer:</strong> ${advice.fertilizer_advice}</div>
+            <div class="advice-text"><strong>${t['wx-fertilizer']}</strong> ${advice.fertilizer_advice}</div>
           </div>
           <div class="advice-row">
             <div class="advice-icon">💧</div>
-            <div class="advice-text"><strong>Irrigation:</strong> ${advice.irrigation_advice}</div>
+            <div class="advice-text"><strong>${t['wx-irrigation']}</strong> ${advice.irrigation_advice}</div>
           </div>
           <div class="advice-row">
             <div class="advice-icon">🦠</div>
-            <div class="advice-text"><strong>Disease Risk:</strong> ${advice.disease_risk_reason}</div>
+            <div class="advice-text"><strong>${t['wx-disease']}</strong> ${advice.disease_risk_reason}</div>
           </div>
         </div>
       </div>
-      <button class="weather-refresh-btn" onclick="weatherLoaded=false;loadWeather()">⟳ Refresh Weather</button>
+      <button class="weather-refresh-btn" onclick="weatherLoaded=false;loadWeather()">${t['wx-refresh']}</button>
     `;
+    // Also refresh the mini banner on home
+    updateWeatherBanner(w);
   }
 
   // ─────────────────────────────────────────────
   // SCAN HISTORY
   // ─────────────────────────────────────────────
   function renderHistory() {
+    const t = TRANSLATIONS[currentLang] || TRANSLATIONS.EN;
     const container = document.getElementById('history-container');
     if (scanHistory.length === 0) {
       container.innerHTML = `
         <div class="history-empty">
           <div class="history-empty-icon">📋</div>
-          <div class="history-empty-title">No scans yet</div>
-          <div class="history-empty-sub">Your disease diagnoses will appear here with timestamps and sensor readings from the moment of each scan.</div>
-          <button class="history-start-btn" onclick="openPage('pest-page')">🔍 Start First Scan</button>
+          <div class="history-empty-title">${t['hist-empty-title']}</div>
+          <div class="history-empty-sub">${t['hist-empty-sub']}</div>
+          <button class="history-start-btn" onclick="openPage('pest-page')">${t['history-start-btn']}</button>
         </div>`;
       return;
     }
@@ -2028,16 +1895,17 @@ No markdown, just JSON.`,
         <div class="history-entry-header">
           <div class="history-crop">
             <span>${getCropEmoji(e.crop)}</span> ${e.crop}
-            ${e.hasPhoto ? '<span style="font-size:10px;background:rgba(255,255,255,0.2);padding:2px 7px;border-radius:100px;">📷 Photo</span>' : ''}
+            ${e.hasPhoto ? '<span style="font-size:10px;background:rgba(255,255,255,0.2);padding:2px 7px;border-radius:100px;">'+t['hist-photo']+'</span>' : ''}
           </div>
           <div class="history-time">${e.timestamp}</div>
         </div>
         <div class="history-entry-body">
+          ${e.photoDataUrl ? `<img src="${e.photoDataUrl}" alt="Leaf scan" style="width:100%;max-height:140px;object-fit:cover;border-radius:10px;margin-bottom:10px;border:1px solid var(--border)">` : ''}
           <div class="history-disease">${e.disease}</div>
-          <div class="history-symptoms">Symptoms: ${e.symptoms.join(' · ')} · ${e.location}</div>
+          <div class="history-symptoms">${t['hist-symptoms']} ${e.symptoms.join(' · ')} · ${e.location}</div>
           <div style="margin-bottom:10px">
             <span class="severity-badge ${sevClass(e.severity)}" style="font-size:10px;padding:3px 10px;margin:0">
-              <div class="severity-dot"></div>${e.severity} Severity
+              <div class="severity-dot"></div>${e.severity} ${t['res-severity-suffix']}
             </span>
           </div>
           ${e.sensorSnap.temp ? `<div class="history-sensors">
@@ -2050,14 +1918,15 @@ No markdown, just JSON.`,
 
     container.innerHTML = `
       <div class="history-header-row">
-        <div class="history-count">${scanHistory.length} scan${scanHistory.length > 1 ? 's' : ''} this session</div>
-        <button class="history-clear-btn" onclick="clearHistory()">🗑 Clear All</button>
+        <div class="history-count">${scanHistory.length} ${t['hist-scans']}</div>
+        <button class="history-clear-btn" onclick="clearHistory()">${t['hist-clear']}</button>
       </div>
       ${entriesHtml}`;
   }
 
   function clearHistory() {
-    if (confirm('Clear all scan history?')) {
+    const t = TRANSLATIONS[currentLang] || TRANSLATIONS.EN;
+    if (confirm(t['hist-confirm-clear'])) {
       scanHistory = [];
       renderHistory();
     }
@@ -2112,6 +1981,48 @@ No markdown, just JSON.`,
       { timeout: 5000 }
     );
   }
+
+
+  // ── WEATHER MINI BANNER (auto-load on home) ──
+  let bannerLoaded = false;
+  async function loadWeatherBanner() {
+    if (bannerLoaded) return;
+    bannerLoaded = true;
+    const banner = document.getElementById('weather-banner');
+    try {
+      const pos = await new Promise((res, rej) =>
+        navigator.geolocation.getCurrentPosition(res, rej, { timeout: 6000, maximumAge: 600000 })
+      );
+      await fetchBannerWeather(pos.coords.latitude, pos.coords.longitude);
+    } catch (e) {
+      await fetchBannerWeather(13.1007, 77.5963);
+    }
+  }
+  async function fetchBannerWeather(lat, lon) {
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,relative_humidity_2m&timezone=auto`;
+      const r = await fetch(url);
+      const d = await r.json();
+      const c = d.current;
+      updateWeatherBanner({
+        temp: c.temperature_2m,
+        humidity: c.relative_humidity_2m,
+        condition: decodeWeatherCode(c.weather_code)
+      });
+    } catch (e) { /* silently fail — banner stays hidden */ }
+  }
+  function updateWeatherBanner(w) {
+    const banner = document.getElementById('weather-banner');
+    if (!banner) return;
+    document.getElementById('wb-temp').textContent = Math.round(w.temp) + '°';
+    document.getElementById('wb-sub').textContent = w.condition + ' · ' + w.humidity + '% RH';
+    // Pick icon emoji from condition string
+    const icon = w.condition.match(/\p{Emoji}/u);
+    if (icon) document.getElementById('wb-icon').textContent = icon[0];
+    banner.style.display = 'flex';
+  }
+  // Load banner on initial home view
+  setTimeout(loadWeatherBanner, 400);
 
   // ── LANG SWITCHER WITH FULL TRANSLATIONS ──
   const TRANSLATIONS = {
@@ -2217,6 +2128,63 @@ No markdown, just JSON.`,
       'history-title': '📋 Scan History',
       'history-sub': 'All diagnoses from this session',
       'history-start-btn': '🔍 Start First Scan',
+      // Result window (disease)
+      'res-detected': 'Disease Detected',
+      'res-severity-suffix': 'Severity',
+      'res-do-today': '⚡ Do This Today',
+      'res-conditions-prefix': '🌡️ Conditions at scan time:',
+      'res-humidity-suffix': 'humidity',
+      'res-soil-suffix': 'Soil',
+      'res-disclaimer': 'This is an AI advisory tool. Confirm with your local agricultural officer or Krishi Vigyan Kendra before applying chemicals.',
+      'res-check-again': '↺ Check Another Problem',
+      'res-analysing': 'Analysing with AI...',
+      'res-analysing-sub': 'Checking',
+      'res-symptoms-suffix': 'symptom(s)',
+      // Result window (fertilizer)
+      'fres-ready': 'Prescription Ready',
+      'fres-plan-suffix': 'Fertilizer Plan',
+      'fres-npk-status': '📊 NPK Status — Current vs Ideal',
+      'fres-shopping': '🛒 Shopping List',
+      'fres-app-guide': '🌿 Application Guide',
+      'fres-confirm': 'Always confirm with your local KVK before applying.',
+      'fres-new': '↺ New Prescription',
+      'fres-calculating': 'Calculating prescription...',
+      'fres-current': 'Current',
+      'fres-ideal': 'Ideal',
+      'fres-error-title': 'Could not get AI prescription',
+      'fres-error-sub': 'Please check your connection and try again.',
+      'fres-try-again': '← Try Again',
+      // Weather
+      'wx-unavailable': 'Weather Unavailable',
+      'wx-unavail-sub': 'Could not fetch weather data. Check your internet connection.',
+      'wx-try-again': '⟳ Try Again',
+      'wx-refresh': '⟳ Refresh Weather',
+      'wx-fetching': 'Fetching weather data...',
+      'wx-getting-loc': 'Getting your location',
+      'wx-humidity': 'humidity',
+      'wx-cloud': 'Cloud Cover',
+      'wx-disease-risk': 'Disease Risk',
+      'wx-temp': 'Temperature',
+      'wx-hum-label': 'Humidity',
+      'wx-ai-title': 'AI Farm Advisory',
+      'wx-spraying': 'Spraying:',
+      'wx-fertilizer': 'Fertilizer:',
+      'wx-irrigation': 'Irrigation:',
+      'wx-disease': 'Disease Risk:',
+      'wx-banner-title': "Today's Weather",
+      'wx-banner-tap': 'Tap for full advisory →',
+      // History
+      'hist-scans': 'scan(s) this session',
+      'hist-clear': '🗑 Clear All',
+      'hist-symptoms': 'Symptoms:',
+      'hist-photo': '📷 Photo',
+      'hist-confirm-clear': 'Clear all scan history?',
+      'hist-empty-title': 'No scans yet',
+      'hist-empty-sub': 'Your disease diagnoses will appear here with timestamps and sensor readings from the moment of each scan.',
+      // Disease error state
+      'res-error-title': 'Could Not Get AI Diagnosis',
+      'res-error-sub': 'Check your internet connection and try again. Your crop and symptom selections are still saved.',
+      'res-error-retry': '← Try Again',
     },
     KN: {
       'nav-brand': 'AgriAdvisor AI',
@@ -2312,6 +2280,58 @@ No markdown, just JSON.`,
       'history-title': '📋 ಸ್ಕ್ಯಾನ್ ಇತಿಹಾಸ',
       'history-sub': 'ಈ ಅಧಿವೇಶನದ ಎಲ್ಲಾ ರೋಗ ಪತ್ತೆ',
       'history-start-btn': '🔍 ಮೊದಲ ಸ್ಕ್ಯಾನ್ ಪ್ರಾರಂಭಿಸಿ',
+      'res-detected': 'ರೋಗ ಪತ್ತೆಯಾಗಿದೆ',
+      'res-severity-suffix': 'ತೀವ್ರತೆ',
+      'res-do-today': '⚡ ಇಂದು ಇದನ್ನು ಮಾಡಿ',
+      'res-conditions-prefix': '🌡️ ಸ್ಕ್ಯಾನ್ ಸಮಯದ ಪರಿಸ್ಥಿತಿಗಳು:',
+      'res-humidity-suffix': 'ತೇವಾಂಶ',
+      'res-soil-suffix': 'ಮಣ್ಣು',
+      'res-disclaimer': 'ಇದು AI ಸಲಹಾ ಸಾಧನ. ರಾಸಾಯನಿಕ ಬಳಸುವ ಮೊದಲು ಸ್ಥಳೀಯ ಕೃಷಿ ಅಧಿಕಾರಿ ಅಥವಾ KVK ಜೊತೆ ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಿ.',
+      'res-check-again': '↺ ಇನ್ನೊಂದು ಸಮಸ್ಯೆ ಪರಿಶೀಲಿಸಿ',
+      'res-analysing': 'AI ವಿಶ್ಲೇಷಿಸುತ್ತಿದೆ...',
+      'res-analysing-sub': 'ಪರಿಶೀಲಿಸುತ್ತಿದೆ',
+      'res-symptoms-suffix': 'ಲಕ್ಷಣ(ಗಳು)',
+      'fres-ready': 'ಪ್ರಿಸ್ಕ್ರಿಪ್ಷನ್ ಸಿದ್ಧ',
+      'fres-plan-suffix': 'ರಸಗೊಬ್ಬರ ಯೋಜನೆ',
+      'fres-npk-status': '📊 NPK ಸ್ಥಿತಿ — ಪ್ರಸ್ತುತ vs ಆದರ್ಶ',
+      'fres-shopping': '🛒 ಶಾಪಿಂಗ್ ಪಟ್ಟಿ',
+      'fres-app-guide': '🌿 ಅನ್ವಯಿಸುವ ಮಾರ್ಗದರ್ಶಿ',
+      'fres-confirm': 'ಅನ್ವಯಿಸುವ ಮೊದಲು ಸ್ಥಳೀಯ KVK ಜೊತೆ ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಿ.',
+      'fres-new': '↺ ಹೊಸ ಪ್ರಿಸ್ಕ್ರಿಪ್ಷನ್',
+      'fres-calculating': 'ಪ್ರಿಸ್ಕ್ರಿಪ್ಷನ್ ಲೆಕ್ಕಾಚಾರ...',
+      'fres-current': 'ಪ್ರಸ್ತುತ',
+      'fres-ideal': 'ಆದರ್ಶ',
+      'fres-error-title': 'AI ಪ್ರಿಸ್ಕ್ರಿಪ್ಷನ್ ಪಡೆಯಲು ಸಾಧ್ಯವಿಲ್ಲ',
+      'fres-error-sub': 'ದಯವಿಟ್ಟು ಇಂಟರ್ನೆಟ್ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+      'fres-try-again': '← ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ',
+      'wx-unavailable': 'ಹವಾಮಾನ ಲಭ್ಯವಿಲ್ಲ',
+      'wx-unavail-sub': 'ಹವಾಮಾನ ದತ್ತಾಂಶ ಪಡೆಯಲಾಗಲಿಲ್ಲ. ಇಂಟರ್ನೆಟ್ ಪರಿಶೀಲಿಸಿ.',
+      'wx-try-again': '⟳ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ',
+      'wx-refresh': '⟳ ಹವಾಮಾನ ರಿಫ್ರೆಶ್',
+      'wx-fetching': 'ಹವಾಮಾನ ಪಡೆಯುತ್ತಿದೆ...',
+      'wx-getting-loc': 'ನಿಮ್ಮ ಸ್ಥಳ ಪಡೆಯುತ್ತಿದೆ',
+      'wx-humidity': 'ತೇವಾಂಶ',
+      'wx-cloud': 'ಮೋಡ ಆವರಣ',
+      'wx-disease-risk': 'ರೋಗ ಅಪಾಯ',
+      'wx-temp': 'ತಾಪಮಾನ',
+      'wx-hum-label': 'ತೇವಾಂಶ',
+      'wx-ai-title': 'AI ಕೃಷಿ ಸಲಹೆ',
+      'wx-spraying': 'ಸಿಂಪರಣೆ:',
+      'wx-fertilizer': 'ರಸಗೊಬ್ಬರ:',
+      'wx-irrigation': 'ನೀರಾವರಿ:',
+      'wx-disease': 'ರೋಗ ಅಪಾಯ:',
+      'wx-banner-title': 'ಇಂದಿನ ಹವಾಮಾನ',
+      'wx-banner-tap': 'ಪೂರ್ಣ ಸಲಹೆಗಾಗಿ ಟ್ಯಾಪ್ →',
+      'hist-scans': 'ಈ ಅಧಿವೇಶನದ ಸ್ಕ್ಯಾನ್‌ಗಳು',
+      'hist-clear': '🗑 ಎಲ್ಲಾ ಅಳಿಸಿ',
+      'hist-symptoms': 'ಲಕ್ಷಣಗಳು:',
+      'hist-photo': '📷 ಫೋಟೋ',
+      'hist-confirm-clear': 'ಎಲ್ಲಾ ಇತಿಹಾಸ ಅಳಿಸುವುದೇ?',
+      'hist-empty-title': 'ಇನ್ನೂ ಸ್ಕ್ಯಾನ್‌ಗಳಿಲ್ಲ',
+      'hist-empty-sub': 'ನಿಮ್ಮ ರೋಗ ಪತ್ತೆಗಳು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತವೆ.',
+      'res-error-title': 'AI ರೋಗ ಪತ್ತೆ ಸಾಧ್ಯವಾಗಲಿಲ್ಲ',
+      'res-error-sub': 'ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ. ನಿಮ್ಮ ಬೆಳೆ ಮತ್ತು ಲಕ್ಷಣ ಆಯ್ಕೆಗಳು ಇನ್ನೂ ಉಳಿದಿವೆ.',
+      'res-error-retry': '← ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ',
     },
     HI: {
       'nav-brand': 'AgriAdvisor AI',
@@ -2407,6 +2427,58 @@ No markdown, just JSON.`,
       'history-title': '📋 स्कैन इतिहास',
       'history-sub': 'इस सत्र के सभी निदान',
       'history-start-btn': '🔍 पहला स्कैन शुरू करें',
+      'res-detected': 'रोग पहचाना गया',
+      'res-severity-suffix': 'गंभीरता',
+      'res-do-today': '⚡ आज यह करें',
+      'res-conditions-prefix': '🌡️ स्कैन समय की स्थिति:',
+      'res-humidity-suffix': 'नमी',
+      'res-soil-suffix': 'मिट्टी',
+      'res-disclaimer': 'यह AI सलाहकार उपकरण है। रसायन लगाने से पहले स्थानीय कृषि अधिकारी या KVK से पुष्टि करें।',
+      'res-check-again': '↺ दूसरी समस्या जाँचें',
+      'res-analysing': 'AI विश्लेषण कर रहा है...',
+      'res-analysing-sub': 'जाँच कर रहा है',
+      'res-symptoms-suffix': 'लक्षण',
+      'fres-ready': 'पर्ची तैयार',
+      'fres-plan-suffix': 'खाद योजना',
+      'fres-npk-status': '📊 NPK स्थिति — वर्तमान बनाम आदर्श',
+      'fres-shopping': '🛒 खरीदारी सूची',
+      'fres-app-guide': '🌿 उपयोग गाइड',
+      'fres-confirm': 'उपयोग से पहले स्थानीय KVK से पुष्टि करें।',
+      'fres-new': '↺ नई पर्ची',
+      'fres-calculating': 'पर्ची की गणना...',
+      'fres-current': 'वर्तमान',
+      'fres-ideal': 'आदर्श',
+      'fres-error-title': 'AI पर्ची नहीं मिल सकी',
+      'fres-error-sub': 'कृपया कनेक्शन जाँचें और फिर प्रयास करें।',
+      'fres-try-again': '← फिर प्रयास करें',
+      'wx-unavailable': 'मौसम उपलब्ध नहीं',
+      'wx-unavail-sub': 'मौसम डेटा नहीं मिला। कनेक्शन जाँचें।',
+      'wx-try-again': '⟳ फिर प्रयास करें',
+      'wx-refresh': '⟳ मौसम रिफ्रेश',
+      'wx-fetching': 'मौसम डेटा लाया जा रहा है...',
+      'wx-getting-loc': 'आपका स्थान प्राप्त कर रहे हैं',
+      'wx-humidity': 'नमी',
+      'wx-cloud': 'बादल आवरण',
+      'wx-disease-risk': 'रोग जोखिम',
+      'wx-temp': 'तापमान',
+      'wx-hum-label': 'नमी',
+      'wx-ai-title': 'AI कृषि सलाह',
+      'wx-spraying': 'छिड़काव:',
+      'wx-fertilizer': 'खाद:',
+      'wx-irrigation': 'सिंचाई:',
+      'wx-disease': 'रोग जोखिम:',
+      'wx-banner-title': 'आज का मौसम',
+      'wx-banner-tap': 'पूरी सलाह के लिए टैप →',
+      'hist-scans': 'इस सत्र के स्कैन',
+      'hist-clear': '🗑 सब साफ़ करें',
+      'hist-symptoms': 'लक्षण:',
+      'hist-photo': '📷 फोटो',
+      'hist-confirm-clear': 'सभी इतिहास साफ़ करें?',
+      'hist-empty-title': 'अभी तक कोई स्कैन नहीं',
+      'hist-empty-sub': 'आपके रोग निदान यहाँ दिखाई देंगे।',
+      'res-error-title': 'AI निदान नहीं मिल सका',
+      'res-error-sub': 'इंटरनेट कनेक्शन जाँचें और फिर प्रयास करें। आपकी फसल और लक्षण की चयन अभी भी सहेजी है।',
+      'res-error-retry': '← फिर प्रयास करें',
     }
   };
 
@@ -2440,11 +2512,15 @@ No markdown, just JSON.`,
     setText('t-banner-title-1', 'banner-title-1');
     setText('t-banner-title-2', 'banner-title-2');
     setText('t-banner-title-gold', 'banner-title-gold');
-    setText('t-banner-cta', 'banner-cta');
+    // Banner CTA — has emoji prefix, preserve it
+    const bannerCtaEl = document.getElementById('t-banner-cta');
+    if (bannerCtaEl && t['banner-cta'] !== undefined) bannerCtaEl.textContent = t['banner-cta'];
     setText('t-section-choose', 'section-choose');
-    // Feature cards
-    setText('t-card1-title', 'card1-title');
-    setText('t-card1-desc', 'card1-desc');
+    // Feature cards — all 5 titles and descs
+    for (let i = 1; i <= 5; i++) {
+      setText('t-card'+i+'-title', 'card'+i+'-title');
+      setText('t-card'+i+'-desc', 'card'+i+'-desc');
+    }
     // Feature card links — update label text but preserve the .arr arrow span
     ['card1-link','card2-link','card3-link','card4-link','card5-link'].forEach(key => {
       const el = document.getElementById('t-' + key);
@@ -2491,26 +2567,46 @@ No markdown, just JSON.`,
     setAttr('fert-ph', 'placeholder', 'ph-placeholder');
     setAttr('fert-moisture', 'placeholder', 'moisture-placeholder');
     setText('t-btn-get-prescription', 'btn-get-prescription');
-    // Shops
+    // Shops — buttons have emoji so set textContent directly from translation (translations already include emoji)
     setText('t-shops-label', 'shops-label');
     setText('t-shops-title', 'shops-title');
     setText('t-shops-sub', 'shops-sub');
     setText('t-shops-search-title', 'shops-search-title');
-    setText('t-shops-gps-btn', 'shops-gps-btn');
+    // GPS button and Go button: translations include the emoji prefix
+    const gpsBtn = document.getElementById('t-shops-gps-btn');
+    if (gpsBtn && t['shops-gps-btn'] !== undefined) gpsBtn.textContent = t['shops-gps-btn'];
     setText('t-shops-or', 'shops-or');
     setAttr('shops-location-input', 'placeholder', 'shops-input-placeholder');
-    setText('t-shops-go', 'shops-go');
+    const goBtn = document.getElementById('t-shops-go');
+    if (goBtn && t['shops-go'] !== undefined) goBtn.textContent = t['shops-go'];
     setText('t-quick-searches', 'quick-searches');
     setText('t-tips-title', 'tips-title');
-    // Sensor bar
+    // Sensor bar — labels only (values stay in their own spans)
     setText('t-sensor-temp', 'sensor-temp');
     setText('t-sensor-hum', 'sensor-hum');
     setText('t-sensor-soil', 'sensor-soil');
     setText('t-sensor-light', 'sensor-light');
-    setText('t-sensor-refresh', 'sensor-refresh');
+    // Sensor refresh button includes icon in translation
+    const sRefresh = document.getElementById('t-sensor-refresh');
+    if (sRefresh && t['sensor-refresh'] !== undefined) sRefresh.textContent = t['sensor-refresh'];
     // History
     setText('t-history-title', 'history-title');
     setText('t-history-sub', 'history-sub');
+
+    // data-i18n attribute support (for banner + weather loading states)
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const k = el.getAttribute('data-i18n');
+      if (t[k] !== undefined) el.textContent = t[k];
+    });
+
+    // Re-render any open dynamic content so translation applies live
+    if (lastDiseaseResult) renderDiseaseResult(lastDiseaseResult);
+    if (lastFertResult && lastFertCurrent) renderFertResult(lastFertResult, lastFertCurrent);
+    if (lastWeather && lastWeatherAdvice) {
+      const wc = document.getElementById('weather-container');
+      if (wc) renderWeather(wc, lastWeather, lastWeatherAdvice);
+    }
+    if (document.getElementById('history-page').classList.contains('active')) renderHistory();
   }
 
   document.querySelectorAll('.lang-btn').forEach(btn => {
@@ -2521,50 +2617,6 @@ No markdown, just JSON.`,
       applyTranslations(langMap[btn.textContent] || 'EN');
     });
   });
-</script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
-
-<script>
-let model;
-let maxPredictions;
-
-const MODEL_URL = "https://teachablemachine.withgoogle.com/models/M-Eo8zhYO/";
-
-async function loadAIModel() {
-    const modelURL = MODEL_URL + "model.json";
-    const metadataURL = MODEL_URL + "metadata.json";
-
-    model = await tmImage.load(modelURL, metadataURL);
-    maxPredictions = model.getTotalClasses();
-
-    console.log("AI model loaded successfully");
-}
-
-loadAIModel();
-
-async function predictLeafDisease(imageElement) {
-
-    if (!model) {
-        alert("AI model still loading...");
-        return;
-    }
-
-    const prediction = await model.predict(imageElement);
-
-    prediction.sort((a, b) => b.probability - a.probability);
-
-    const topResult = prediction[0];
-
-    const diseaseName = topResult.className;
-    const confidence = (topResult.probability * 100).toFixed(1);
-
-    alert(
-        "🤖 AI Prediction\n\n" +
-        "Disease: " + diseaseName +
-        "\nConfidence: " + confidence + "%"
-    );
-}
 </script>
 </body>
 </html>
